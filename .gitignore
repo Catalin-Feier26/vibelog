@@ -12,7 +12,19 @@ target/
 .settings
 .springBeans
 .sts4-cache
+### For the backend ###
+/target
+/.mvn
+/logs
+/*.log
+/*.jar
+.env
+### For the frontend ###
+/node_modules
+/build
+/.env
 
+application.properties
 ### IntelliJ IDEA ###
 .idea
 *.iws
