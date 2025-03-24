@@ -2,8 +2,8 @@ package com.catalin.vibelog.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
-import model.Media;
-import model.MediaType;
+import com.catalin.vibelog.model.Media;
+import com.catalin.vibelog.model.MediaType;
 import org.springframework.stereotype.Repository;
 
 @Repository

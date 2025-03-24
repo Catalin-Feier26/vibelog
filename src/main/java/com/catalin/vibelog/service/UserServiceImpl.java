@@ -1,6 +1,6 @@
 package com.catalin.vibelog.service;
 
-import model.User;
+import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.repository.UserRepository;
 import org.springframework.stereotype.Service;
 

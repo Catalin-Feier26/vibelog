@@ -1,4 +1,4 @@
-package model;
+package com.catalin.vibelog.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
+@Table(name="users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User {
 
@@ -32,6 +33,8 @@ public abstract class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "profile_picture")
+    private String profilePicture;
 
     public User() {
     }

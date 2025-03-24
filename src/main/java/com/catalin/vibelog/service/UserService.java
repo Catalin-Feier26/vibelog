@@ -1,6 +1,6 @@
 package com.catalin.vibelog.service;
 
-import model.User;
+import com.catalin.vibelog.model.User;
 
 public interface UserService {
      User findUserById(long userId);

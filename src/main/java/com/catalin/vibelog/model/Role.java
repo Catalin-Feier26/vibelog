@@ -1,4 +1,4 @@
-package model;
+package com.catalin.vibelog.model;
 
 public enum Role {
     USER, MODERATOR, ADMIN;

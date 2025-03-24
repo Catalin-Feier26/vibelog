@@ -1,8 +1,8 @@
 package com.catalin.vibelog.repository;
 
-import model.FollowId;
-import model.Follow;
-import model.User;
+import com.catalin.vibelog.model.FollowId;
+import com.catalin.vibelog.model.Follow;
+import com.catalin.vibelog.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

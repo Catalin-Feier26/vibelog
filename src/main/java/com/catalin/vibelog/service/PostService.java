@@ -1,6 +1,6 @@
 package com.catalin.vibelog.service;
 
-import model.Post;
+import com.catalin.vibelog.model.Post;
 
 import java.util.List;
 
@@ -9,4 +9,5 @@ public interface PostService {
     List<Post> getPostsByUserId(Long userId);
     Post getPostById(Long postId);
     List<Post> searchPosts(String title);
+
 }

@@ -1,14 +1,12 @@
 package com.catalin.vibelog;
 
+import com.catalin.vibelog.model.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import model.RegularUser;
-import model.Role;
-import model.User;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import com.catalin.vibelog.service.UserService;
-
+import com.catalin.vibelog.service.PostService;
 
 @SpringBootApplication
 public class VibelogApplication {
@@ -18,25 +16,37 @@ public class VibelogApplication {
 
     }
     @Bean
-    public CommandLineRunner testUserService(UserService userService) {
+    public CommandLineRunner testPostService(PostService postService, UserService userService) {
         return args -> {
-            // ✅ Create and register a new user
-            RegularUser newUser = new RegularUser();
-            newUser.setEmail("test@example.com");
-            newUser.setUsername("testuser");
-            newUser.setPasswordHash("hashed123");
-            newUser.setRole(Role.USER); // Or ADMIN, MODERATOR
+            // 1. Register a test user (only if not already in DB)
+            User user = new RegularUser();
+            user.setEmail("author@example.com");
+            user.setUsername("author123");
+            user.setPasswordHash("password");
+            user.setRole(Role.USER);
 
-            User savedUser = userService.registerUser(newUser);
-            System.out.println("✅ Registered user: " + savedUser.getUsername());
+            try {
+                ((RegularUser) user).setPostCount(0);
+                userService.registerUser(user);
+                System.out.println("✅ Test user registered");
+            } catch (Exception e) {
+                System.out.println("⚠️  User might already exist: " + e.getMessage());
+                user = userService.findUserByEmail("author@example.com");
+            }
 
-            // ✅ Retrieve by email
-            User retrieved = userService.findUserByEmail("test@example.com");
-            System.out.println("📥 Retrieved user: " + retrieved.getUsername());
 
-            // ✅ Test login
-            User loggedIn = userService.login("test@example.com", "hashed123");
-            System.out.println("🔐 Login successful? " + loggedIn.getUsername() + " " + loggedIn.getId());
+            Post post = new Post();
+            post.setTitle("My First Vibe");
+            post.setBody("This is my first post using PostService!");
+            post.setStatus(PostStatus.PUBLISHED);
+
+            Post savedPost = postService.createPost(post, user.getId());
+            System.out.println("📝 Post created: " + savedPost.getTitle());
+
+            // 3. Fetch all posts by user
+            System.out.println("📥 All posts by user:");
+            postService.getPostsByUserId(user.getId())
+                    .forEach(p -> System.out.println(" - " + p.getTitle()));
         };
     }
 }

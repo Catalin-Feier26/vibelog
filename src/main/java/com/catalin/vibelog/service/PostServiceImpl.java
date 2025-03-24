@@ -1,7 +1,9 @@
 package com.catalin.vibelog.service;
 
-import model.Post;
-import model.User;
+import com.catalin.vibelog.model.Post;
+import com.catalin.vibelog.model.PostStatus;
+import com.catalin.vibelog.model.RegularUser;
+import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.repository.PostRepository;
 import java.util.List;
@@ -20,13 +22,23 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Post createPost(Post post, Long userId){
-        User user = userRepository.findById(userId).orElse(null);
-        if(user == null){
-            return null;
-        }
+    public Post createPost(Post post, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         post.setUser(user);
-        return postRepository.save(post);
+        post.setStatus(PostStatus.PUBLISHED);
+
+        // Save post first
+        Post savedPost = postRepository.save(post);
+
+
+        if (user instanceof RegularUser regular) {
+            regular.setPostCount(regular.getPostCount() + 1);
+            userRepository.save(regular);
+        }
+
+        return savedPost;
     }
 
     @Override

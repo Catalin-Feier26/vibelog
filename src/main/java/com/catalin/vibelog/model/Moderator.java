@@ -1,4 +1,4 @@
-package model;
+package com.catalin.vibelog.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

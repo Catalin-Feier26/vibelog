@@ -1,4 +1,4 @@
-package model;
+package com.catalin.vibelog.model;
 
 import java.io.Serializable;
 import lombok.EqualsAndHashCode;

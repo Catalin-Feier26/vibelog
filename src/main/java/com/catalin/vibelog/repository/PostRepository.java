@@ -1,8 +1,8 @@
 package com.catalin.vibelog.repository;
 
 
-import model.Post;
-import model.PostStatus;
+import com.catalin.vibelog.model.Post;
+import com.catalin.vibelog.model.PostStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -14,4 +14,5 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findByStatus(PostStatus status);
     List<Post> findByTitleContaining(String title);
     List<Post> findByCreatedAt(LocalDateTime createdAt);
+
 }

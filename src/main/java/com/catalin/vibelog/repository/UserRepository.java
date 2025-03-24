@@ -1,6 +1,6 @@
 package com.catalin.vibelog.repository;
 
-import model.User;
+import com.catalin.vibelog.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,4 +10,5 @@ public interface UserRepository extends JpaRepository<User, Long>{
     User findUserByUsername(String username);
     User findUserByEmailAndPasswordHash(String email, String passwordHash);
     User findUserByUsernameAndPasswordHash(String username, String passwordHash);
+
 }
