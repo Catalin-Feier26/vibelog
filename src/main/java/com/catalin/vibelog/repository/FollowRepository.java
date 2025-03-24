@@ -1,4 +1,4 @@
-package repository;
+package com.catalin.vibelog.repository;
 
 import model.FollowId;
 import model.Follow;

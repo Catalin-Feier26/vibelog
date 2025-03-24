@@ -1,4 +1,4 @@
-package repository;
+package com.catalin.vibelog.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
-@Setter
 @Getter
+@Setter
 @Entity
 @Table(name = "posts")
 public class Post {
