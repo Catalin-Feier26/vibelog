@@ -1,4 +1,4 @@
-package com.catalin.vibelog.service;
+package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.model.PostStatus;
@@ -7,11 +7,13 @@ import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.repository.PostRepository;
 import java.util.List;
+
+import com.catalin.vibelog.service.PostService;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class PostServiceImpl implements PostService{
+public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;

@@ -1,10 +1,11 @@
-package com.catalin.vibelog.service;
+package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.model.Media;
 import com.catalin.vibelog.model.MediaType;
 import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.repository.MediaRepository;
 import com.catalin.vibelog.repository.PostRepository;
+import com.catalin.vibelog.service.MediaService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
