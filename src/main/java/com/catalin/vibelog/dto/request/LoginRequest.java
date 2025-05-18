@@ -1,4 +1,4 @@
-package com.catalin.vibelog.DTOs.request;
+package com.catalin.vibelog.dto.request;
 
 /**
  * Payload for logging in an existing user.

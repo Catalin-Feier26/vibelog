@@ -1,4 +1,4 @@
-package com.catalin.vibelog.DTOs.response;
+package com.catalin.vibelog.dto.response;
 
 import java.time.Instant;
 
