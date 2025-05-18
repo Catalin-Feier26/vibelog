@@ -1,15 +1,13 @@
 package com.catalin.vibelog.DTOs.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+/**
+ * Payload for logging in an existing user.
+ */
+public record LoginRequest(
+        @jakarta.validation.constraints.Email
+        @jakarta.validation.constraints.NotBlank
+        String email,
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class LoginRequest {
-    private String email;
-    private String password;
-}
+        @jakarta.validation.constraints.NotBlank
+        String password
+) {}

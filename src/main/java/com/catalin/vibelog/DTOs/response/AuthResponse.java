@@ -1,16 +1,17 @@
 package com.catalin.vibelog.DTOs.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.Instant;
+import java.util.List;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthResponse {
-    private String token;
-    private String email;
-    private String userRole;
-}
+/**
+ * Response returned after successful authentication (login or register).
+ */
+public record AuthResponse(
+        String token,
+        String tokenType,
+        Instant expiresAt,
+        Long userId,
+        String username,
+        String email,
+        List<String> roles
+) {}

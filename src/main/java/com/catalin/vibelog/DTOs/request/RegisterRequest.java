@@ -1,16 +1,16 @@
 package com.catalin.vibelog.DTOs.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+/**
+ * Payload for registering a new user.
+ */
+public record RegisterRequest(
+        @jakarta.validation.constraints.Email
+        @jakarta.validation.constraints.NotBlank
+        String email,
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class RegisterRequest {
-    private String email;
-    private String password;
-    private String username;
-}
+        @jakarta.validation.constraints.NotBlank
+        String username,
+
+        @jakarta.validation.constraints.NotBlank
+        String password
+) {}
