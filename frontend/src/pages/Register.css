@@ -1,0 +1,89 @@
+/* Register.css */
+.register-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #a8e063, #56ab2f);
+}
+
+.register-form {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    animation: fadeInDown 0.5s ease-out both;
+}
+
+.register-form h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #2c3e50;
+}
+
+.register-form .form-group {
+    margin-bottom: 1rem;
+    animation: fadeIn 0.6s ease-out both;
+}
+.register-form .form-group:nth-child(1) { animation-delay: 0.2s; }
+.register-form .form-group:nth-child(2) { animation-delay: 0.3s; }
+.register-form .form-group:nth-child(3) { animation-delay: 0.4s; }
+
+.register-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+.register-form input:focus {
+    border-color: #56ab2f;
+    outline: none;
+}
+
+.register-form button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #56ab2f;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: transform 0.2s, background 0.3s;
+}
+.register-form button:hover {
+    transform: scale(1.05);
+    background: #4a8a2b;
+}
+
+.error-msg {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    text-align: center;
+    animation: shake 0.3s ease-in-out both;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* reuse same shake keyframes as in Login.css */
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}

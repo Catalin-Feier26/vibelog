@@ -1,0 +1,40 @@
+/* Home.css */
+.home-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 60px);
+    padding: 2rem;
+    background: radial-gradient(circle at top left, #f0f4ff, #d9e2ff);
+    animation: fadeInUp 0.7s ease-out both;
+}
+
+.home-page .welcome-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    animation: slideInLeft 0.6s ease-out both;
+}
+
+.home-page .welcome-subtitle {
+    font-size: 1.5rem;
+    color: #34495e;
+    animation: fadeIn 0.8s ease-out both;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-50px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
