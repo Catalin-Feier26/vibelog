@@ -23,6 +23,8 @@ export default function Navbar() {
                         <>
                             <li><Link to="/">Home</Link></li>
                             <li><Link to="/profile">Profile</Link></li>
+                            <li><Link to="/posts">Feed</Link></li>
+                            <li><Link to="/posts/new">New Post</Link></li>
                             {user.roles.includes('ADMIN') && <li><Link to="/admin">Admin Panel</Link></li>}
                             {user.roles.includes('MODERATOR') && <li><Link to="/moderate">Moderation</Link></li>}
                         </>

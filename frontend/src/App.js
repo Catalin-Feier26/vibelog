@@ -6,7 +6,10 @@ import Login    from './pages/Login';
 import Register from './pages/Register';
 import Home     from './pages/Home';
 import Profile     from './pages/Profile';
-// import Profile, AdminPanel, Moderate pages as you build them
+import PostsFeed    from './pages/PostsFeed';
+import NewPostPage from './pages/NewPostPage';
+import SinglePost  from './pages/SinglePost';
+
 
 function PrivateRoute({ children }) {
   const { user } = React.useContext(AuthContext);
@@ -18,6 +21,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Navbar />
+            <div className="main-content">
           <Routes>
             <Route path="/login"    element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -34,8 +38,25 @@ export default function App() {
                   </PrivateRoute>
                 }
             />
+            <Route path ="/posts" element={
+                <PrivateRoute>
+                    <PostsFeed/>
+                </PrivateRoute>
+                }
+                />
+              <Route path="/posts/new"     element={
+                  <PrivateRoute>
+                  <NewPostPage />
+                  </PrivateRoute>
+              } />
+              <Route path="/posts/:postId" element={
+                  <PrivateRoute>
+                  <SinglePost />
+                  </PrivateRoute>
+              } />
             {/* add more protected routes here */}
           </Routes>
+            </div>
         </BrowserRouter>
       </AuthProvider>
   );

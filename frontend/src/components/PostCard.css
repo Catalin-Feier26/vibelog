@@ -1,0 +1,107 @@
+.post-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.post-card header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.post-card header strong {
+    font-weight: 600;
+    color: #333;
+}
+
+.post-card p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.post-card footer {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Like button */
+.btn-like {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #6b73ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-like:hover {
+    background: rgba(107, 115, 255, 0.1);
+}
+
+/* “Liked” state */
+.btn-like.liked {
+    color: #e74c3c;
+}
+
+.btn-like.liked:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+/* Delete button */
+.btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 0.9rem;
+    margin-left: auto; /* push it to the far right */
+    transition: color 0.2s;
+}
+
+.btn-delete:hover {
+    color: #e74c3c;
+}
+
+.btn-comment {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #4a5568;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-comment:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* The panel that drops down under the post */
+.comment-panel {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.comment-panel .comment-list {
+    margin-left: 1rem;
+}
+.comment-panel .comment-form {
+    margin-left: 1rem;
+}

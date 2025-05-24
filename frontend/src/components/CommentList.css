@@ -1,0 +1,82 @@
+.comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.comment-list li {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-list li:last-child {
+    border-bottom: none;
+}
+
+.comment-list li strong {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.comment-list li p {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 0.5rem;
+}
+
+.comment-list .timestamp {
+    font-size: 0.8rem;
+    color: #888;
+    align-self: flex-end;
+}
+.comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.comment-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-delete-comment {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.btn-delete-comment:hover {
+    color: #e74c3c;
+}
+
+.comment-content {
+    margin: 0.5rem 0;
+    color: #444;
+}
+
+.comment-timestamp {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.no-comments {
+    font-style: italic;
+    color: #666;
+}

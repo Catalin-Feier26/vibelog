@@ -1,0 +1,54 @@
+/* src/pages/PostFeed.css */
+
+.posts-feed {
+    max-width: 600px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem;
+}
+
+.feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feed-header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #2d3748;
+}
+
+.btn-new-post {
+    padding: 0.5rem 1rem;
+    background: var(#6b73ff);
+    color: #fff;
+    font-size: 0.9rem;
+    border-radius: var(--radius, 0.5rem);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-new-post:hover {
+    background: #5969d0;
+}
+
+.feed-status {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.feed-status.loading {
+    font-style: italic;
+}
+
+.feed-status.error {
+    color: #e74c3c;
+}
+
+.feed-status.empty {
+    color: #888;
+}

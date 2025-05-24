@@ -1,0 +1,52 @@
+.single-post-page {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.single-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.single-nav a {
+    color: var(#6b73ff);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.single-nav .btn-delete {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.single-nav .btn-delete:hover {
+    background: #c0392b;
+}
+
+.comments-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.comments-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #2d3748;
+    font-size: 1.25rem;
+}
+.single-loading,
+.single-error {
+    text-align: center;
+    color: #888;
+}
+.single-error {
+    color: #e74c3c;
+}
