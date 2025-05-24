@@ -2,6 +2,7 @@ package com.catalin.vibelog.service;
 
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
+import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
 
 /**
  * Service interface defining operations related to retrieving and updating user profiles.
@@ -51,4 +52,15 @@ public interface UserService {
      * @throws com.catalin.vibelog.exception.UsernameAlreadyExistsException if the new username is already in use
      */
     ProfileResponse updateProfileByUsername(String username, ProfileUpdateRequest req);
+
+    /**
+     * Update the authenticated user's profile _and_ return
+     * a new JWT based on the updated User entity.
+     *
+     * @param username the current username (from the JWT)
+     * @param req      the profile‐update request
+     * @return a {@link ProfileUpdateWithTokenResponse} with both token and profile
+     */
+    ProfileUpdateWithTokenResponse updateProfileAndGetTokenByUsername(String username, ProfileUpdateRequest req);
+
 }

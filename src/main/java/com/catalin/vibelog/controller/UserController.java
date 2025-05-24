@@ -2,6 +2,8 @@ package com.catalin.vibelog.controller;
 
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
+import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
+import com.catalin.vibelog.security.JwtUtil;
 import com.catalin.vibelog.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -18,9 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService) {
+
+    public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil=jwtUtil;
     }
 
     /**
@@ -44,14 +49,14 @@ public class UserController {
      *
      * @param auth Spring Security authentication containing the principal's username
      * @param req  validated request body with fields to update
-     * @return a {@link ProfileResponse} reflecting the updated profile
+     * @return a {@link ProfileUpdateWithTokenResponse} reflecting the updated profile
      */
     @PutMapping("/me")
-    public ProfileResponse updateMyProfile(
+    public ProfileUpdateWithTokenResponse updateMyProfile(
             Authentication auth,
             @Valid @RequestBody ProfileUpdateRequest req
     ) {
         String username = auth.getName();
-        return userService.updateProfileByUsername(username, req);
+        return userService.updateProfileAndGetTokenByUsername(username, req);
     }
 }
