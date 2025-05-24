@@ -1,6 +1,8 @@
 package com.catalin.vibelog.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
  * Represents a "like" action by a user on a post.
  */
 @Entity
+@Setter
+@Getter
 @Table(name = "likes")
 public class Like {
 
