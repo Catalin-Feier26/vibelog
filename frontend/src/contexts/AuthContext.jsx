@@ -1,40 +1,58 @@
+// src/contexts/AuthContext.jsx
 import React, { createContext, useState } from 'react';
-import api from '../api/axios';
+import { login as apiLogin, register as apiRegister } from '../api/authService';
 
-export const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+    // Load and parse stored user, but guard against "undefined" or bad JSON
     const [user, setUser] = useState(() => {
-        const s = sessionStorage.getItem('user');
-        return s ? JSON.parse(s) : null;
+        const stored = sessionStorage.getItem('user');
+        if (!stored || stored === 'undefined') return null;
+        try {
+            return JSON.parse(stored);
+        } catch {
+            return null;
+        }
     });
 
-    const login = async ({ email, password }) => {
-        const { data } = await api.post('/auth/login', { email, password });
-        sessionStorage.setItem('token', data.token);
-        const u = {
-            userId:   data.userId,
-            username: data.username,
-            email:    data.email,
-            roles:    data.roles,
-        };
-        sessionStorage.setItem('user', JSON.stringify(u));
-        setUser(u);
+    /** Overwrite the JWT in sessionStorage */
+    const setToken = (token) => {
+        sessionStorage.setItem('token', token);
     };
 
-    const register = async ({ email, username, password }) => {
-        const { data } = await api.post('/auth/register', { email, username, password });
-        sessionStorage.setItem('token', data.token);
-        const u = {
-            userId:   data.userId,
-            username: data.username,
-            email:    data.email,
-            roles:    data.roles,
-        };
+    /**
+     * Log in with { email, password }.
+     * Expects AuthResponse: { token, tokenType, expiresAt, userId, username, email, roles }
+     * Builds a simpler user object and persists both token + user.
+     */
+    const login = async (creds) => {
+        const resp = await apiLogin(creds);
+        const { token, userId, username, email, roles } = resp;
+
+        const u = { id: userId, username, email, roles };
+        sessionStorage.setItem('token', token);
         sessionStorage.setItem('user', JSON.stringify(u));
         setUser(u);
+        return u;
     };
 
+    /**
+     * Register with { email, username, password }.
+     * Same shape as login.
+     */
+    const register = async (creds) => {
+        const resp = await apiRegister(creds);
+        const { token, userId, username, email, roles } = resp;
+
+        const u = { id: userId, username, email, roles };
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('user', JSON.stringify(u));
+        setUser(u);
+        return u;
+    };
+
+    /** Clear out auth data */
     const logout = () => {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
@@ -42,7 +60,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout }}>
+        <AuthContext.Provider value={{ user, setUser, setToken, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
