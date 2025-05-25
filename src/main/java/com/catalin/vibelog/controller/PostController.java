@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * REST controller for managing Posts.
  * <p>
@@ -169,5 +171,64 @@ public class PostController {
                 PostStatus.PUBLISHED,
                 pageable
         );
+    }
+    /**
+     * Reblog an existing post: creates a new Post with originalPost set.
+     *
+     * @param postId the ID of the post to reblog
+     * @param auth   the authenticated principal
+     * @return the newly created PostResponse (status PUBLISHED)
+     */
+    @PostMapping("/{postId}/reblog")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostResponse reblogPost(
+            @PathVariable Long postId,
+            Authentication auth
+    ) {
+        String username = auth.getName();
+        PostResponse original = postService.getPostById(postId);
+        PostRequest req = new PostRequest(
+                original.title(),
+                original.body(),
+                PostStatus.PUBLISHED.name(),
+                postId
+        );
+        return postService.createPost(req, username);
+    }
+    /**
+     * Undo a reblog by deleting the reblog‐post authored by the current user.
+     */
+    @DeleteMapping("/{postId}/reblog")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void undoReblog(
+            @PathVariable Long postId,
+            Authentication auth
+    ) {
+        postService.undoReblog(auth.getName(), postId);
+    }
+
+    /**
+     * Check if the current user has reblogged this post.
+     *
+     * @return { "reblogged": true|false }
+     */
+    @GetMapping("/{postId}/reblog/state")
+    public Map<String, Boolean> reblogState(
+            @PathVariable Long postId,
+            Authentication auth
+    ) {
+        boolean state = postService.isReblogged(auth.getName(), postId);
+        return Map.of("reblogged", state);
+    }
+
+    /**
+     * Count how many times a post has been reblogged.
+     *
+     * @return { "count": 123 }
+     */
+    @GetMapping("/{postId}/reblog/count")
+    public Map<String, Integer> reblogCount(@PathVariable Long postId) {
+        int count = postService.countReblogs(postId);
+        return Map.of("count", count);
     }
 }

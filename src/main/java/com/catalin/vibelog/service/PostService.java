@@ -80,5 +80,23 @@ public interface PostService {
      * @return a {@link Page} of {@link PostResponse} DTOs matching author and status
      */
     Page<PostResponse> listPostsByAuthorAndStatus(String username, PostStatus status, Pageable page);
+    /**
+     * Undo a reblog by deleting the reblog‐post that the user created.
+     */
+    void undoReblog(String username, Long originalPostId);
+
+    /**
+     * Check if {@code username} has already reblogged {@code originalPostId}.
+     *
+     * @return true if a reblog‐post exists
+     */
+    boolean isReblogged(String username, Long originalPostId);
+
+    /**
+     * Count how many times {@code originalPostId} has been reblogged.
+     *
+     * @return the total number of reblogs
+     */
+    int countReblogs(Long originalPostId);
 
 }

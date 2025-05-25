@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 /**
  * Repository for {@link Post} entities.
  * Provides CRUD operations plus custom queries for pagination and filtering by status or author.
@@ -30,5 +32,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      */
     Page<Post> findByAuthorUsername(String username, Pageable pageable);
     Page<Post> findByAuthorUsernameAndStatus(String username, PostStatus status, Pageable pageable);
+    // detect if a user reblogged
+    boolean existsByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
+
+    // count all reblogs (any post with originalPost FK)
+    int countByOriginalPostId(Long originalPostId);
+
+    // find the single reblog to delete
+    Optional<Post> findByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
 
 }

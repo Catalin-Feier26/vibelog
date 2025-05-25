@@ -71,6 +71,13 @@ public class PostServiceImpl implements PostService {
         post.setBody(req.body());
         post.setStatus(PostStatus.fromString(req.status()));
         post.setAuthor(author);
+
+        if (req.originalPostId() != null) {
+            Post original = postRepo.findById(req.originalPostId())
+                    .orElseThrow(() -> new PostNotFoundException(req.originalPostId()));
+            post.setOriginalPost(original);
+        }
+
         Post saved = postRepo.save(post);
         return toDto(saved);
     }
@@ -185,8 +192,34 @@ public class PostServiceImpl implements PostService {
                 post.getCreatedAt(),
                 post.getAuthor().getUsername(),
                 likeCount,
-                commentCount
+                commentCount,
+                post.getOriginalPost() == null ? null : post.getOriginalPost().getId(),
+                post.getOriginalPost() == null ? null : post.getOriginalPost().getAuthor().getUsername()
+
         );
+    }
+    @Override
+    @Transactional
+    public void undoReblog(String username, Long originalPostId) {
+        // find the reblog-post authored by user
+        Post reblog = postRepo
+                .findByAuthorUsernameAndOriginalPostId(username, originalPostId)
+                .orElseThrow(() -> new PostNotFoundException(
+                        originalPostId));
+        postRepo.delete(reblog);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isReblogged(String username, Long originalPostId) {
+        return postRepo
+                .existsByAuthorUsernameAndOriginalPostId(username, originalPostId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countReblogs(Long originalPostId) {
+        return postRepo.countByOriginalPostId(originalPostId);
     }
 
 }

@@ -82,13 +82,6 @@ public class Post {
             fetch = FetchType.LAZY)
     private List<Like> likes = new ArrayList<>();
 
-    /** All reblog records of this post; deleted when the post is deleted. */
-    @OneToMany(mappedBy = "originalPost",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private List<Reblog> reblogs = new ArrayList<>();
-
     /**
      * Lifecycle callback to set {@code createdAt} before the entity is persisted.
      */

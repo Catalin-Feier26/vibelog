@@ -1,21 +1,21 @@
+// src/main/java/com/catalin/vibelog/dto/response/PostResponse.java
 package com.catalin.vibelog.dto.response;
 
 import java.time.LocalDateTime;
 
 /**
- * DTO representing the data returned for a blog post.
- * <p>
- * Exposes read-only fields derived from the Post entity and its relationships.
- * </p>
+ * Response DTO for a blog post, including reblog metadata if present.
  *
- * @param id              unique identifier of the post
- * @param title           title of the post
- * @param body            main content of the post
- * @param status          current status of the post (e.g., DRAFT, PUBLISHED)
- * @param createdAt       timestamp when the post was created
- * @param authorUsername  username of the post's author
- * @param likeCount       total number of likes on the post
- * @param commentCount    total number of comments on the post
+ * @param id                       unique identifier
+ * @param title                    post title
+ * @param body                     post content
+ * @param status                   status (e.g. DRAFT, PUBLISHED)
+ * @param createdAt                creation timestamp
+ * @param authorUsername           original author’s username
+ * @param likeCount                total likes
+ * @param commentCount             total comments
+ * @param originalPostId           ID of the post this reblog points to, or null
+ * @param originalAuthorUsername   username of the original post’s author, or null
  */
 public record PostResponse(
         Long id,
@@ -25,5 +25,7 @@ public record PostResponse(
         LocalDateTime createdAt,
         String authorUsername,
         int likeCount,
-        int commentCount
+        int commentCount,
+        Long originalPostId,
+        String originalAuthorUsername
 ) {}
