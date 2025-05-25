@@ -50,3 +50,15 @@
 .single-error {
     color: #e74c3c;
 }
+.btn-edit, .btn-save, .btn-cancel {
+    margin-left: 0.5rem;
+    background: var(--primary, #6b73ff);
+    color: #fff;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius, 0.5rem);
+    cursor: pointer;
+}
+.btn-edit { background: #4a5568; }
+.btn-delete { background: #e74c3c; }
+.edit-post-form .form-group { margin-bottom: 1rem; }

@@ -91,6 +91,7 @@ public class CommentServiceImpl implements CommentService {
                     "User '" + authorUsername + "' is not the author of comment " + commentId);
         }
         comment.setContent(req.content());
+        comment.setEditedAt(LocalDateTime.now());
         Comment updated = commentRepo.save(comment);
         return toDto(updated);
     }

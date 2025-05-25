@@ -80,3 +80,15 @@
     font-style: italic;
     color: #666;
 }
+.btn-edit-sm, .btn-delete-sm, .btn-save-sm, .btn-cancel-sm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+.comment-edit-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}

@@ -12,6 +12,7 @@ import com.catalin.vibelog.repository.LikeRepository;
 import com.catalin.vibelog.repository.PostRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.PostService;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 /**
  * Default implementation of {@link PostService}, using Spring Data JPA for persistence.
@@ -108,6 +111,7 @@ public class PostServiceImpl implements PostService {
         }
         post.setTitle(req.title());
         post.setBody(req.body());
+        post.setUpdatedAt(LocalDateTime.now());
         post.setStatus(PostStatus.fromString(req.status()));
         Post updated = postRepo.save(post);
         return toDto(updated);

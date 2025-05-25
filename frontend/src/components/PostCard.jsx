@@ -1,8 +1,10 @@
+// src/components/PostCard.jsx
 import React, { useState, useEffect } from 'react';
-import { toggleLike, getLikes }           from '../api/likeService';
-import { getCommentsForPost }             from '../api/commentService';
-import CommentList                        from './CommentList';
-import CommentForm                        from './CommentForm';
+import { Link }                          from 'react-router-dom';
+import { toggleLike, getLikes }          from '../api/likeService';
+import { getCommentsForPost }            from '../api/commentService';
+import CommentList                       from './CommentList';
+import CommentForm                       from './CommentForm';
 import './PostCard.css';
 
 export default function PostCard({ post, onDeleted }) {
@@ -12,7 +14,7 @@ export default function PostCard({ post, onDeleted }) {
     const [comments, setComments]         = useState([]);
     const [commentCount, setCommentCount] = useState(0);
 
-    // 1️⃣ Fetch initial like status & count
+    // Fetch initial like status & count
     useEffect(() => {
         (async () => {
             try {
@@ -25,7 +27,7 @@ export default function PostCard({ post, onDeleted }) {
         })();
     }, [post.id]);
 
-    // 2️⃣ Fetch comment count only (not full list) on mount
+    // Fetch comment count only on mount
     useEffect(() => {
         (async () => {
             try {
@@ -37,23 +39,7 @@ export default function PostCard({ post, onDeleted }) {
         })();
     }, [post.id]);
 
-    // helper to load full comments & sync count
-    const loadComments = async () => {
-        try {
-            const res = await getCommentsForPost(post.id);
-            setComments(res.data);
-            setCommentCount(res.data.length);
-        } catch (e) {
-            console.error('Failed to load comments', e);
-        }
-    };
-
-    // toggle the comments panel
-    const handleToggleComments = () => {
-        if (!showComments) loadComments();
-        setShowComments(v => !v);
-    };
-
+    // Toggle like
     const handleLike = async () => {
         try {
             const res = await toggleLike(post.id);
@@ -64,16 +50,40 @@ export default function PostCard({ post, onDeleted }) {
         }
     };
 
-    const handleDelete = () => onDeleted && onDeleted(post.id);
+    // Delete post
+    const handleDelete = () => {
+        onDeleted && onDeleted(post.id);
+    };
+
+    // Load full comments & update count
+    const loadComments = async () => {
+        try {
+            const res = await getCommentsForPost(post.id);
+            setComments(res.data);
+            setCommentCount(res.data.length);
+        } catch (e) {
+            console.error('Failed to load comments', e);
+        }
+    };
+
+    // Toggle comments panel
+    const handleToggleComments = () => {
+        if (!showComments) loadComments();
+        setShowComments(v => !v);
+    };
 
     return (
         <div className="post-card">
-            <header>
-                <strong>@{post.authorUsername}</strong>
-                <span>{new Date(post.createdAt).toLocaleString()}</span>
+            <header className="post-header">
+                <Link to={`/posts/${post.id}`} className="post-link">
+                    <strong>@{post.authorUsername}</strong>
+                    <span>{new Date(post.createdAt).toLocaleString()}</span>
+                </Link>
             </header>
 
-            <p>{post.body}</p>
+            <Link to={`/posts/${post.id}`} className="post-link">
+                <p>{post.body}</p>
+            </Link>
 
             <footer>
                 <button
@@ -97,6 +107,7 @@ export default function PostCard({ post, onDeleted }) {
                     <CommentList
                         comments={comments}
                         onCommentDeleted={loadComments}
+                        onCommentUpdated={loadComments}
                     />
                     <CommentForm
                         postId={post.id}

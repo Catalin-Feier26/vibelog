@@ -8,3 +8,6 @@ export const addComment = (postId, data) =>
 
 export const deleteComment = id =>
     api.delete(`/comments/${id}`);
+
+export const updateComment = (commentId, data) =>
+    api.put(`/comments/${commentId}`, data);
