@@ -10,6 +10,7 @@ import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.security.JwtUtil;
 import com.catalin.vibelog.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,6 +143,17 @@ public class UserServiceImpl implements UserService {
         return new ProfileUpdateWithTokenResponse(newToken, profile);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public User findByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User not found: " + username)
+                );
+    }
 
     /**
      * Maps a {@link User} entity to a {@link ProfileResponse} DTO.

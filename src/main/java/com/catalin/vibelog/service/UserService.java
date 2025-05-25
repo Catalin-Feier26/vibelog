@@ -3,6 +3,7 @@ package com.catalin.vibelog.service;
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
 import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
+import com.catalin.vibelog.model.User;
 
 /**
  * Service interface defining operations related to retrieving and updating user profiles.
@@ -62,5 +63,12 @@ public interface UserService {
      * @return a {@link ProfileUpdateWithTokenResponse} with both token and profile
      */
     ProfileUpdateWithTokenResponse updateProfileAndGetTokenByUsername(String username, ProfileUpdateRequest req);
-
+    /**
+     * Lookup a User by username.
+     *
+     * @param username the username to search for
+     * @return the matching User
+     * @throws jakarta.persistence.EntityNotFoundException if no user with that username exists
+     */
+    User findByUsername(String username);
 }
