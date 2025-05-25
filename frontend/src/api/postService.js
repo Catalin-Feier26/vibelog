@@ -16,3 +16,15 @@ export const getMyDrafts = () => api.get('/posts/me/drafts');
  */
 export const getPublishedPostsByUser = (username, page = 0, size = 15) =>
     api.get(`/posts/user/${username}`, {params: { page, size }});
+
+export const getReblogState = postId =>
+    api.get(`/posts/${postId}/reblog/state`).then(res => res.data.reblogged);
+
+export const getReblogCount = postId =>
+    api.get(`/posts/${postId}/reblog/count`).then(res => res.data.count);
+
+export const reblogPost = postId =>
+    api.post(`/posts/${postId}/reblog`);
+
+export const undoReblogPost = postId =>
+    api.delete(`/posts/${postId}/reblog`);

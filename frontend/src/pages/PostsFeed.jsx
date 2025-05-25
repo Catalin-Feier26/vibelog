@@ -18,7 +18,6 @@ export default function PostsFeed() {
         setLoading(true);
         try {
             const res = await getAllPosts();
-            // unwrap the Spring Data Page DTO
             setPosts(res.data.content);
         } catch {
             setError('Failed to load posts');
@@ -34,6 +33,11 @@ export default function PostsFeed() {
         } catch {
             // optionally show an error toast
         }
+    };
+
+    // called when a post is reblogged/un-reblogged
+    const handleReblog = () => {
+        load();
     };
 
     return (
@@ -53,7 +57,12 @@ export default function PostsFeed() {
 
             {!loading &&
                 posts.map(p => (
-                    <PostCard key={p.id} post={p} onDeleted={handleDeleted} />
+                    <PostCard
+                        key={p.id}
+                        post={p}
+                        onDeleted={handleDeleted}
+                        onReblog={handleReblog}
+                    />
                 ))}
         </div>
     );

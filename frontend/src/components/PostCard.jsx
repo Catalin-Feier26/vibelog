@@ -1,84 +1,111 @@
+// src/components/PostCard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toggleLike, getLikes } from '../api/likeService';
-import { getCommentsForPost } from '../api/commentService';
+import { getCommentsForPost }   from '../api/commentService';
+import {
+    getReblogState,
+    getReblogCount,
+    reblogPost,
+    undoReblogPost
+} from '../api/postService';
 import CommentList from './CommentList';
 import CommentForm from './CommentForm';
 import './PostCard.css';
 
-export default function PostCard({ post, onDeleted }) {
-    const [likesCount, setLikesCount] = useState(post.likesCount || 0);
-    const [likedByMe, setLikedByMe] = useState(false);
-    const [showComments, setShowComments] = useState(false);
-    const [comments, setComments] = useState([]);
+export default function PostCard({ post, onDeleted, onReblog }) {
+    const [likesCount, setLikesCount]     = useState(post.likeCount || 0);
+    const [likedByMe, setLikedByMe]       = useState(false);
     const [commentCount, setCommentCount] = useState(0);
+    const [comments, setComments]         = useState([]);
+    const [showComments, setShowComments] = useState(false);
 
-    // Fetch initial like status & count
+    const [reblogged, setReblogged]       = useState(false);
+    const [reblogCount, setReblogCount]   = useState(post.reblogCount || 0);
+
+    // Fetch initial state
     useEffect(() => {
-        (async () => {
-            try {
-                const res = await getLikes(post.id);
+        getLikes(post.id)
+            .then(res => {
                 setLikesCount(res.data.totalLikes);
                 setLikedByMe(res.data.liked);
-            } catch (e) {
-                console.error('Failed to fetch likes', e);
-            }
-        })();
+            })
+            .catch(console.error);
+
+        getCommentsForPost(post.id)
+            .then(res => setCommentCount(res.data.length))
+            .catch(console.error);
+
+        getReblogState(post.id)
+            .then(setReblogged)
+            .catch(console.error);
+
+        getReblogCount(post.id)
+            .then(setReblogCount)
+            .catch(console.error);
     }, [post.id]);
 
-    // Fetch comment count only on mount
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await getCommentsForPost(post.id);
-                setCommentCount(res.data.length);
-            } catch (e) {
-                console.error('Failed to fetch comment count', e);
-            }
-        })();
-    }, [post.id]);
-
-    // Toggle like
+    // Handlers
     const handleLike = async () => {
         try {
             const res = await toggleLike(post.id);
             setLikesCount(res.data.totalLikes);
             setLikedByMe(res.data.liked);
         } catch (e) {
-            console.error('Failed to toggle like', e);
+            console.error(e);
         }
     };
 
-    // Delete post
-    const handleDelete = () => {
-        onDeleted && onDeleted(post.id);
-    };
-
-    // Load full comments & update count
     const loadComments = async () => {
         try {
             const res = await getCommentsForPost(post.id);
             setComments(res.data);
             setCommentCount(res.data.length);
         } catch (e) {
-            console.error('Failed to load comments', e);
+            console.error(e);
         }
     };
 
-    // Toggle comments panel
     const handleToggleComments = () => {
         if (!showComments) loadComments();
         setShowComments(v => !v);
     };
 
+    const handleDelete = () => {
+        onDeleted && onDeleted(post.id);
+    };
+
+    const handleReblog = async () => {
+        try {
+            if (reblogged) {
+                await undoReblogPost(post.id);
+                setReblogCount(c => c - 1);
+            } else {
+                await reblogPost(post.id);
+                setReblogCount(c => c + 1);
+            }
+            setReblogged(r => !r);
+            onReblog && onReblog();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     return (
-        <div className="post-card">
+        <div className={`post-card${reblogged ? ' is-reblog' : ''}`}>
+            {post.originalPostId && (
+                <div className="reblog-banner">
+                    🔁 <strong>@{post.authorUsername}</strong> reblogged{' '}
+                    <Link to={`/posts/${post.originalPostId}`} className="reblog-link">
+                        @{post.originalAuthorUsername}
+                    </Link>
+                </div>
+            )}
+
             <header className="post-header">
-                {/* username links to their profile */}
                 <Link to={`/users/${post.authorUsername}`} className="author-link">
                     <strong>@{post.authorUsername}</strong>
                 </Link>
-                {/* timestamp still links to the post itself */}
                 <Link to={`/posts/${post.id}`} className="time-link">
                     <span>{new Date(post.createdAt).toLocaleString()}</span>
                 </Link>
@@ -88,7 +115,7 @@ export default function PostCard({ post, onDeleted }) {
                 <p>{post.body}</p>
             </Link>
 
-            <footer>
+            <footer className="post-footer">
                 <button
                     onClick={handleLike}
                     className={likedByMe ? 'btn-like liked' : 'btn-like'}
@@ -98,6 +125,13 @@ export default function PostCard({ post, onDeleted }) {
 
                 <button onClick={handleToggleComments} className="btn-comment">
                     💬 {commentCount}
+                </button>
+
+                <button
+                    onClick={handleReblog}
+                    className={reblogged ? 'btn-reblog reblogged' : 'btn-reblog'}
+                >
+                    {reblogged ? '🔁' : '↪️'} {reblogCount}
                 </button>
 
                 <button onClick={handleDelete} className="btn-delete">
@@ -112,10 +146,7 @@ export default function PostCard({ post, onDeleted }) {
                         onCommentDeleted={loadComments}
                         onCommentUpdated={loadComments}
                     />
-                    <CommentForm
-                        postId={post.id}
-                        onCommentAdded={loadComments}
-                    />
+                    <CommentForm postId={post.id} onCommentAdded={loadComments} />
                 </div>
             )}
         </div>

@@ -160,3 +160,37 @@
     color: #888;
     font-size: 0.85rem;
 }
+/* Highlight card when user reblogged it */
+.post-card.is-reblog {
+    background-color: #fafafa;
+    border-left: 4px solid #ccc;
+}
+
+/* Reblog banner at top */
+.reblog-banner {
+    font-size: 0.85rem;
+    color: #555;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #eee;
+    background-color: #f0f0f0;
+}
+
+/* Link inside banner */
+.reblog-banner .reblog-link {
+    text-decoration: none;
+    font-weight: bold;
+    color: inherit;
+}
+
+/* Reblog button styling */
+.btn-reblog {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    font-size: 1rem;
+}
+
+.btn-reblog.reblogged {
+    color: #4caf50;  /* green tint when reblogged */
+}
