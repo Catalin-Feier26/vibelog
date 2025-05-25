@@ -1,4 +1,3 @@
-// src/main/java/com/catalin/vibelog/dto/request/ReportStatusUpdateDTO.java
 package com.catalin.vibelog.dto.request;
 
 import com.catalin.vibelog.model.enums.ReportStatus;

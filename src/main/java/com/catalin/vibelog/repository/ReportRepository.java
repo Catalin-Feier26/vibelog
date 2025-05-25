@@ -1,4 +1,3 @@
-// src/main/java/com/catalin/vibelog/repository/ReportRepository.java
 package com.catalin.vibelog.repository;
 
 import com.catalin.vibelog.model.Report;

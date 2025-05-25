@@ -1,4 +1,3 @@
-// src/main/java/com/catalin/vibelog/exception/ReportNotFoundException.java
 package com.catalin.vibelog.exception;
 
 import org.springframework.http.HttpStatus;

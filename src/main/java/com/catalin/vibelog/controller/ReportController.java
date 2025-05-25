@@ -1,4 +1,3 @@
-// src/main/java/com/catalin/vibelog/controller/ReportController.java
 package com.catalin.vibelog.controller;
 
 import com.catalin.vibelog.dto.request.ReportRequestDTO;
