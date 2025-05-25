@@ -146,4 +146,28 @@ public class PostController {
         String username = auth.getName();
         return postService.listPostsByAuthorAndStatus(username, PostStatus.DRAFT, pageable);
     }
+
+    /**
+     * List all **published** posts by the given username, newest first.
+     *
+     * @param username the username whose posts to fetch
+     * @param pageable pagination & sorting (default: createdAt desc, size=15)
+     * @return a page of {@link PostResponse}
+     */
+    @GetMapping("/user/{username}")
+    public Page<PostResponse> listPublishedPostsByUser(
+            @PathVariable String username,
+            @PageableDefault(
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC,
+                    size = 15
+            )
+            Pageable pageable
+    ) {
+        return postService.listPostsByAuthorAndStatus(
+                username,
+                PostStatus.PUBLISHED,
+                pageable
+        );
+    }
 }
