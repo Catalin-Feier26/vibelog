@@ -194,3 +194,15 @@
 .btn-reblog.reblogged {
     color: #4caf50;  /* green tint when reblogged */
 }
+.btn-report {
+    background: none;
+    border: none;
+    color: #e53935;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+/* Ensure the card padding accommodates the report form */
+.post-card {
+    position: relative;
+}

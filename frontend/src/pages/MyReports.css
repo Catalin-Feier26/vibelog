@@ -1,0 +1,47 @@
+.my-reports-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.my-reports-page h1 {
+    margin-bottom: 1rem;
+}
+
+.status {
+    padding: 1rem;
+    text-align: center;
+    color: #555;
+}
+
+.status.error {
+    color: #c00;
+}
+
+.status.empty {
+    color: #777;
+}
+
+.report-list {
+    list-style: none;
+    padding: 0;
+}
+
+.report-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fff;
+}
+
+.report-meta {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.report-reason {
+    font-size: 1rem;
+    color: #333;
+}

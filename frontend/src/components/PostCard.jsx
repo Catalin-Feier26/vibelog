@@ -11,19 +11,27 @@ import {
 } from '../api/postService';
 import CommentList from './CommentList';
 import CommentForm from './CommentForm';
+import ReportForm from './ReportForm';
 import './PostCard.css';
 
 export default function PostCard({ post, onDeleted, onReblog }) {
+    // Like state
     const [likesCount, setLikesCount]     = useState(post.likeCount || 0);
     const [likedByMe, setLikedByMe]       = useState(false);
+
+    // Comment state
     const [commentCount, setCommentCount] = useState(0);
     const [comments, setComments]         = useState([]);
     const [showComments, setShowComments] = useState(false);
 
+    // Reblog state
     const [reblogged, setReblogged]       = useState(false);
     const [reblogCount, setReblogCount]   = useState(post.reblogCount || 0);
 
-    // Fetch initial state
+    // Report state
+    const [reporting, setReporting]       = useState(false);
+
+    // Fetch initial counts & states
     useEffect(() => {
         getLikes(post.id)
             .then(res => {
@@ -93,6 +101,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
 
     return (
         <div className={`post-card${reblogged ? ' is-reblog' : ''}`}>
+            {/* Banner for reblogs */}
             {post.originalPostId && (
                 <div className="reblog-banner">
                     🔁 <strong>@{post.authorUsername}</strong> reblogged{' '}
@@ -137,7 +146,25 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                 <button onClick={handleDelete} className="btn-delete">
                     🗑️
                 </button>
+
+                {/* Report button */}
+                <button
+                    onClick={() => setReporting(r => !r)}
+                    className="btn-report"
+                >
+                    🚩 Report
+                </button>
             </footer>
+
+            {/* Inline report form */}
+            {reporting && (
+                <ReportForm
+                    type="post"
+                    targetId={post.id}
+                    onCancel={() => setReporting(false)}
+                    onReported={() => setReporting(false)}
+                />
+            )}
 
             {showComments && (
                 <div className="comment-panel">

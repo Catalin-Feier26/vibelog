@@ -26,6 +26,7 @@ export default function Navbar() {
                             <li><Link to="/posts">Feed</Link></li>
                             <li><Link to="/posts/new">New Post</Link></li>
                             <li><Link to="/posts/drafts">My Drafts</Link></li>
+                            <li><Link to="/reports/my">My Reports</Link></li>
                             {user.roles.includes('ADMIN') && <li><Link to="/admin">Admin Panel</Link></li>}
                             {user.roles.includes('MODERATOR') && <li><Link to="/moderate">Moderation</Link></li>}
                         </>

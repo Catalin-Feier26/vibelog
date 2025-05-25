@@ -1,7 +1,8 @@
 // src/components/CommentList.jsx
 import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext }           from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { deleteComment, updateComment } from '../api/commentService';
+import ReportForm from './ReportForm';
 import './CommentList.css';
 
 export default function CommentList({
@@ -12,9 +13,10 @@ export default function CommentList({
     const { user } = useContext(AuthContext);
 
     // local copy so we can mutate it for instant UI feedback
-    const [comments, setComments]     = useState(initialComments);
-    const [editingId, setEditingId]   = useState(null);
+    const [comments, setComments]       = useState(initialComments);
+    const [editingId, setEditingId]     = useState(null);
     const [editContent, setEditContent] = useState('');
+    const [reportingId, setReportingId] = useState(null);
 
     // sync local state when parent provides new data
     useEffect(() => {
@@ -42,9 +44,12 @@ export default function CommentList({
     const handleSaveEdit = async id => {
         try {
             const res = await updateComment(id, { content: editContent });
-            // update this comment locally
             setComments(cs =>
-                cs.map(c => (c.id === id ? { ...c, content: res.data.content, createdAt: res.data.createdAt } : c))
+                cs.map(c =>
+                    c.id === id
+                        ? { ...c, content: res.data.content, createdAt: res.data.createdAt }
+                        : c
+                )
             );
             setEditingId(null);
             onCommentUpdated && onCommentUpdated();
@@ -65,8 +70,9 @@ export default function CommentList({
             )}
 
             {comments.map(c => {
-                const isAuthor = user?.username === c.authorUsername;
+                const isAuthor  = user?.username === c.authorUsername;
                 const isEditing = editingId === c.id;
+                const isReporting = reportingId === c.id;
 
                 return (
                     <li key={c.id} className="comment-item">
@@ -92,6 +98,17 @@ export default function CommentList({
                                     </button>
                                 </>
                             )}
+
+                            {!isAuthor && !isEditing && (
+                                <button
+                                    className="btn-report-comment"
+                                    onClick={() =>
+                                        setReportingId(isReporting ? null : c.id)
+                                    }
+                                >
+                                    🚩
+                                </button>
+                            )}
                         </div>
 
                         {isEditing ? (
@@ -116,6 +133,15 @@ export default function CommentList({
                             </div>
                         ) : (
                             <p className="comment-content">{c.content}</p>
+                        )}
+
+                        {isReporting && (
+                            <ReportForm
+                                type="comment"
+                                targetId={c.id}
+                                onCancel={() => setReportingId(null)}
+                                onReported={() => setReportingId(null)}
+                            />
                         )}
                     </li>
                 );

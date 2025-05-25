@@ -11,6 +11,8 @@ import NewPostPage from './pages/NewPostPage';
 import SinglePost  from './pages/SinglePost';
 import DraftsPage  from './pages/DraftsPage';
 import UserProfile from "./pages/UserProfile";
+import MyReports from './pages/MyReports';
+
 function PrivateRoute({ children }) {
   const { user } = React.useContext(AuthContext);
   return user ? children : <Navigate to="/login" />;
@@ -63,6 +65,14 @@ export default function App() {
                             <UserProfile />
                         </PrivateRoute>
                      }
+              />
+              <Route
+                  path="/reports/my"
+                  element={
+                    <PrivateRoute>
+                        <MyReports />
+                    </PrivateRoute>
+              }
               />
             {/* add more protected routes here */}
           </Routes>
