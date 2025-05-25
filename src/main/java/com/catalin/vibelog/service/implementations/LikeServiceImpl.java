@@ -13,6 +13,8 @@ import com.catalin.vibelog.service.LikeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * Default implementation of {@link LikeService}, using Spring Data JPA.
  * <p>
@@ -55,6 +57,7 @@ public class LikeServiceImpl implements LikeService {
             like.setId(id);
             like.setUser(user);
             like.setPost(post);
+            like.setLikedAt(LocalDateTime.now());
             likeRepo.save(like);
             liked = true;
         }

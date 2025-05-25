@@ -7,6 +7,8 @@ import com.catalin.vibelog.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -69,6 +71,11 @@ public class PostController {
     @GetMapping
     public Page<PostResponse> listPosts(
             @RequestParam(required = false, defaultValue = "PUBLISHED") PostStatus status,
+            @PageableDefault(
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC,
+                    size = 15
+            )
             Pageable pageable
     ) {
         return postService.listPosts(status, pageable);
@@ -84,6 +91,11 @@ public class PostController {
     @GetMapping("/me")
     public Page<PostResponse> listMyPosts(
             Authentication auth,
+            @PageableDefault(
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC,
+                    size = 15
+            )
             Pageable pageable
     ) {
         String username = auth.getName();
