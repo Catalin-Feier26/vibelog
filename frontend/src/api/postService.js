@@ -6,3 +6,13 @@ export const createPost     = data => api.post('/posts', data);
 export const updatePost     = (id, data) => api.put(`/posts/${id}`, data);
 export const deletePost     = id => api.delete(`/posts/${id}`);
 export const getMyDrafts = () => api.get('/posts/me/drafts');
+
+/**
+ * Get all “PUBLISHED” posts by a given user, paged.
+ * @param {string} username
+ * @param {number} page    zero-based page index (default 0)
+ * @param {number} size    page size (default 15)
+ * @returns {Promise<Page<PostResponse>>}
+ */
+export const getPublishedPostsByUser = (username, page = 0, size = 15) =>
+    api.get(`/posts/user/${username}`, {params: { page, size }});

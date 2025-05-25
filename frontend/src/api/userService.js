@@ -15,3 +15,10 @@ export const updateMyProfile = async (data) => {
     const resp = await api.put('/users/me', data);
     return resp.data;
 };
+/**
+ * Fetch any user’s profile by username.
+ * @param {string} username
+ * @returns {Promise<ProfileResponse>}
+ */
+export const getUserProfile = (username) =>
+    api.get(`/users/${username}`);
