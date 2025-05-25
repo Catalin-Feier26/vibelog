@@ -67,5 +67,18 @@ public interface PostService {
      * @return a page of PostResponse, ordered by createdAt desc
      */
     Page<PostResponse> listPostsByAuthor(String authorUsername, Pageable pageable);
+    /**
+     * Return a page of posts authored by the given user and having the given status.
+     * <p>
+     * This is used to power the “My Drafts” view (status = DRAFT) or any other
+     * filtered list of a user’s own posts.
+     * </p>
+     *
+     * @param username the username of the post author
+     * @param status   the status to filter by (e.g. DRAFT or PUBLISHED)
+     * @param page pagination & sorting information
+     * @return a {@link Page} of {@link PostResponse} DTOs matching author and status
+     */
+    Page<PostResponse> listPostsByAuthorAndStatus(String username, PostStatus status, Pageable page);
 
 }

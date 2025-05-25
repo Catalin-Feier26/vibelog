@@ -29,4 +29,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      * @return a {@link Page} of {@link Post} created by the given username
      */
     Page<Post> findByAuthorUsername(String username, Pageable pageable);
+    Page<Post> findByAuthorUsernameAndStatus(String username, PostStatus status, Pageable pageable);
+
 }

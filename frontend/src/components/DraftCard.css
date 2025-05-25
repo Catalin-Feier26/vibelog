@@ -1,0 +1,83 @@
+.draft-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.draft-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    color: #2d3748;
+}
+
+.draft-body {
+    margin: 0 0 1rem;
+    color: #4a5568;
+    line-height: 1.5;
+}
+
+.draft-edit-form input.draft-input-title,
+.draft-edit-form textarea.draft-input-body {
+    width: 100%;
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.draft-edit-form input:focus,
+.draft-edit-form textarea:focus {
+    border-color: var(--primary, #6b73ff);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(107,115,255,0.2);
+}
+
+.draft-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.draft-actions button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-draft-edit {
+    background: var(--primary, #6b73ff);
+    color: #fff;
+}
+.btn-draft-save {
+    background: #4a5568;
+    color: #fff;
+}
+.btn-draft-publish {
+    background: #27ae60;
+    color: #fff;
+}
+.btn-draft-delete {
+    background: #e74c3c;
+    color: #fff;
+}
+.btn-draft-cancel {
+    background: #ccc;
+    color: #444;
+}
+
+.draft-actions button:hover {
+    transform: translateY(-1px);
+}
+
+.draft-error {
+    color: #e74c3c;
+    margin-bottom: 0.75rem;
+}

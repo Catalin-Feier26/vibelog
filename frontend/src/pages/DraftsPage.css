@@ -1,0 +1,21 @@
+.drafts-page {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.drafts-page h1 {
+    font-size: 1.75rem;
+    color: #2d3748;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.status {
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #666;
+}
+.status.error { color: #e74c3c; }
+.status.empty { color: #888; }
+.status.loading { font-style: italic; }

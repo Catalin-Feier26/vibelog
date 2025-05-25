@@ -4,6 +4,7 @@ import com.catalin.vibelog.dto.request.PostRequest;
 import com.catalin.vibelog.dto.response.PostResponse;
 import com.catalin.vibelog.exception.PostNotFoundException;
 import com.catalin.vibelog.exception.UnauthorizedActionException;
+import com.catalin.vibelog.exception.UserNotFoundException;
 import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.model.enums.PostStatus;
@@ -147,6 +148,22 @@ public class PostServiceImpl implements PostService {
                 .findByAuthorUsername(authorUsername, pageWithDefaultSort)
                 .map(this::toDto);
     }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostResponse> listPostsByAuthorAndStatus(String username,
+                                                         PostStatus status,
+                                                         Pageable pageable) {
+        // ensure user exists
+        userRepo.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+
+        Page<Post> page = postRepo.findByAuthorUsernameAndStatus(username, status, pageable);
+        return page.map(this::toDto);
+    }
+
     /**
      * Maps a {@link Post} entity to a {@link PostResponse} DTO.
      * <p>Also includes counts for likes and comments.</p>

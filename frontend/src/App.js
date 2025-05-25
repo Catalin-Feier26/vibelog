@@ -9,7 +9,7 @@ import Profile     from './pages/Profile';
 import PostsFeed    from './pages/PostsFeed';
 import NewPostPage from './pages/NewPostPage';
 import SinglePost  from './pages/SinglePost';
-
+import DraftsPage  from './pages/DraftsPage';
 
 function PrivateRoute({ children }) {
   const { user } = React.useContext(AuthContext);
@@ -54,6 +54,9 @@ export default function App() {
                   <SinglePost />
                   </PrivateRoute>
               } />
+              <Route path="/posts/drafts" element={
+                  <PrivateRoute><DraftsPage/></PrivateRoute>
+                  }/>
             {/* add more protected routes here */}
           </Routes>
             </div>

@@ -135,4 +135,15 @@ public class PostController {
         String username = auth.getName();
         postService.deletePost(postId, username);
     }
+
+    /** List the current user’s drafts, newest first */
+    @GetMapping("/me/drafts")
+    public Page<PostResponse> listMyDrafts(
+            Authentication auth,
+            @PageableDefault(sort="createdAt", direction=Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        String username = auth.getName();
+        return postService.listPostsByAuthorAndStatus(username, PostStatus.DRAFT, pageable);
+    }
 }
