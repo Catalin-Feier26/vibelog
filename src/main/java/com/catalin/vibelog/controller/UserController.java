@@ -39,7 +39,16 @@ public class UserController {
         String username = auth.getName();
         return userService.getProfileByUsername(username);
     }
-
+    /**
+     * Get another user’s profile by username.
+     *
+     * @param username  the target username
+     * @return the public ProfileResponse DTO
+     */
+    @GetMapping("/{username}")
+    public ProfileResponse getUserProfile(@PathVariable String username) {
+        return userService.getProfileByUsername(username);
+    }
     /**
      * PUT /api/users/me : Update the profile of the currently authenticated user.
      * <p>
