@@ -1,0 +1,54 @@
+
+.profile-page {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.user-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.user-info .bio {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.btn-follow {
+    background: #6b73ff;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.btn-follow:hover {
+    background: #5763d1;
+}
+
+.counts {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.posts-list > * {
+    margin-bottom: 1rem;
+}

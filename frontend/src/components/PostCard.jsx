@@ -1,17 +1,16 @@
-// src/components/PostCard.jsx
 import React, { useState, useEffect } from 'react';
-import { Link }                          from 'react-router-dom';
-import { toggleLike, getLikes }          from '../api/likeService';
-import { getCommentsForPost }            from '../api/commentService';
-import CommentList                       from './CommentList';
-import CommentForm                       from './CommentForm';
+import { Link } from 'react-router-dom';
+import { toggleLike, getLikes } from '../api/likeService';
+import { getCommentsForPost } from '../api/commentService';
+import CommentList from './CommentList';
+import CommentForm from './CommentForm';
 import './PostCard.css';
 
 export default function PostCard({ post, onDeleted }) {
-    const [likesCount, setLikesCount]     = useState(post.likesCount || 0);
-    const [likedByMe, setLikedByMe]       = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+    const [likedByMe, setLikedByMe] = useState(false);
     const [showComments, setShowComments] = useState(false);
-    const [comments, setComments]         = useState([]);
+    const [comments, setComments] = useState([]);
     const [commentCount, setCommentCount] = useState(0);
 
     // Fetch initial like status & count
@@ -75,8 +74,12 @@ export default function PostCard({ post, onDeleted }) {
     return (
         <div className="post-card">
             <header className="post-header">
-                <Link to={`/posts/${post.id}`} className="post-link">
+                {/* username links to their profile */}
+                <Link to={`/users/${post.authorUsername}`} className="author-link">
                     <strong>@{post.authorUsername}</strong>
+                </Link>
+                {/* timestamp still links to the post itself */}
+                <Link to={`/posts/${post.id}`} className="time-link">
                     <span>{new Date(post.createdAt).toLocaleString()}</span>
                 </Link>
             </header>

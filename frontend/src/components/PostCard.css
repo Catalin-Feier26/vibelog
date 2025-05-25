@@ -148,3 +148,15 @@
     color: #888;
     white-space: nowrap;
 }
+
+.post-header .author-link {
+    text-decoration: none;
+    color: #333;
+    margin-right: auto;
+}
+
+.post-header .time-link {
+    text-decoration: none;
+    color: #888;
+    font-size: 0.85rem;
+}

@@ -32,11 +32,12 @@ export const unfollowUser = (follower, followee) =>
     });
 
 /**
- * Get follower/following counts for `username`.
- * @param {string} username
- * @returns {Promise<{followers: number, following: number}>}
+ * @param {string} follower  current user’s username
+ * @param {string} followee  target user’s username
  */
-export const getFollowCounts = (username) =>
-    api
-        .post('/follows/count', { followerUsername: '', followeeUsername: username })
+export const getFollowCounts = (follower, followee) =>
+    api.post('/follows/count', {
+        followerUsername: follower,
+        followeeUsername: followee
+    })
         .then(res => res.data);
