@@ -1,0 +1,50 @@
+.notification-dropdown {
+    position: absolute;
+    top: 2.5rem;
+    right: 0;
+    width: 300px;
+    max-height: 400px;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 1000;
+}
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+.btn-read-all, .btn-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.dropdown-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+}
+.notification-item {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+.unseen .notification-item {
+    background: #f9f9f9;
+}
+.seen .notification-item {
+    background: white;
+}
+.empty {
+    text-align: center;
+    padding: 1rem;
+    color: #888;
+}
+.notif-time {
+    display: block;
+    color: #aaa;
+    font-size: 0.75rem;
+}
