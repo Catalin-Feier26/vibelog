@@ -1,6 +1,8 @@
 package com.catalin.vibelog.repository;
 
 import com.catalin.vibelog.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -46,4 +48,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return an Optional containing the matching User, if any
      */
     Optional<User> findByUsername(String username);
+    /**
+     * Find users whose username contains {@code fragment}, case-insensitive.
+     */
+    Page<User> findByUsernameContainingIgnoreCase(String fragment, Pageable pageable);
+
 }

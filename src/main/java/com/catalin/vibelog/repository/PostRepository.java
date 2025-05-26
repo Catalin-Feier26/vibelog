@@ -40,5 +40,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // find the single reblog to delete
     Optional<Post> findByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
-
+    /**
+     * Search published posts whose title or body contains {@code text}, ignoring case.
+     */
+    Page<Post> findByStatusAndTitleContainingIgnoreCaseOrStatusAndBodyContainingIgnoreCase(
+            PostStatus status1, String titleFragment,
+            PostStatus status2, String bodyFragment,
+            Pageable pageable
+    );
 }
