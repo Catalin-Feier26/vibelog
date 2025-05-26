@@ -1,0 +1,41 @@
+/* src/components/UserCard.css */
+
+.user-card {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.user-card:hover {
+    background: #f7f7f7;
+    border-color: #ccc;
+}
+
+.user-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+}
+
+.user-card-info {
+    flex: 1;
+}
+
+.user-card-username {
+    display: block;
+    font-size: 1rem;
+}
+
+.user-card-bio {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    color: #666;
+}

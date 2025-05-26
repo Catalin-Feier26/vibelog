@@ -14,6 +14,7 @@ import DraftsPage                     from './pages/DraftsPage';
 import UserProfile                    from './pages/UserProfile';
 import MyReports                      from './pages/MyReports';
 import ModerationPage                 from './pages/ModerationPage';
+import SearchPage                     from './pages/SearchPage';
 
 function PrivateRoute({ children }) {
     const { user } = useContext(AuthContext);
@@ -33,15 +34,15 @@ function AppRoutes() {
                     <Route path="/register" element={<Register />} />
 
                     {/* Protected */}
-                    <Route path="/"           element={<PrivateRoute><Home/></PrivateRoute>} />
-                    <Route path="/profile"    element={<PrivateRoute><Profile/></PrivateRoute>} />
-                    <Route path="/posts"      element={<PrivateRoute><PostsFeed/></PrivateRoute>} />
-                    <Route path="/posts/new"  element={<PrivateRoute><NewPostPage/></PrivateRoute>} />
-                    <Route path="/posts/:postId" element={<PrivateRoute><SinglePost/></PrivateRoute>} />
-                    <Route path="/posts/drafts" element={<PrivateRoute><DraftsPage/></PrivateRoute>} />
-                    <Route path="/users/:username" element={<PrivateRoute><UserProfile/></PrivateRoute>} />
-                    <Route path="/reports/my"     element={<PrivateRoute><MyReports/></PrivateRoute>} />
-
+                    <Route path="/"                 element={<PrivateRoute><Home/></PrivateRoute>} />
+                    <Route path="/profile"          element={<PrivateRoute><Profile/></PrivateRoute>} />
+                    <Route path="/posts"            element={<PrivateRoute><PostsFeed/></PrivateRoute>} />
+                    <Route path="/posts/new"        element={<PrivateRoute><NewPostPage/></PrivateRoute>} />
+                    <Route path="/posts/:postId"    element={<PrivateRoute><SinglePost/></PrivateRoute>} />
+                    <Route path="/posts/drafts"     element={<PrivateRoute><DraftsPage/></PrivateRoute>} />
+                    <Route path="/users/:username"  element={<PrivateRoute><UserProfile/></PrivateRoute>} />
+                    <Route path="/reports/my"       element={<PrivateRoute><MyReports/></PrivateRoute>} />
+                    <Route path="/search"           element={<PrivateRoute><SearchPage /></PrivateRoute>}/>
                     {/* Moderator-only */}
                     <Route
                         path="/moderate"

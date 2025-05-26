@@ -138,3 +138,13 @@
     padding: 2px 6px;
     border-radius: 50%;
 }
+.btn-search {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+    cursor: pointer;
+}
+.btn-search:hover {
+    transform: scale(1.1);
+}

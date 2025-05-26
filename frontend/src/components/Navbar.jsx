@@ -1,18 +1,13 @@
 // src/components/Navbar.jsx
 import React, { useContext } from 'react';
-import { Link, useNavigate }      from 'react-router-dom';
-import { AuthContext }            from '../contexts/AuthContext';
-import NotificationBell           from './NotificationBell';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext }       from '../contexts/AuthContext';
+import NotificationBell      from './NotificationBell';
 import './Navbar.css';
 
 export default function Navbar() {
     const { user, logout } = useContext(AuthContext);
     const nav = useNavigate();
-
-    const handleLogout = () => {
-        logout();
-        nav('/login');
-    };
 
     return (
         <nav className="navbar">
@@ -39,14 +34,16 @@ export default function Navbar() {
                 <div className="auth-buttons">
                     {user ? (
                         <>
-                            {/* <-- Bell first -->
-                  NotificationBell renders the 🔔 and badge */}
-                            <NotificationBell />
-
+                            {/* search button */}
                             <button
-                                onClick={handleLogout}
-                                className="logout-btn"
+                                className="btn-search"
+                                onClick={() => nav('/search')}
+                                aria-label="Search"
                             >
+                                🔍
+                            </button>
+                            <NotificationBell />
+                            <button onClick={() => { logout(); nav('/login'); }} className="logout-btn">
                                 Logout
                             </button>
                         </>
