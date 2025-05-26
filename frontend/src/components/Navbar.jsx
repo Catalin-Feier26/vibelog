@@ -1,13 +1,17 @@
-// src/components/Navbar.jsx
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext }       from '../contexts/AuthContext';
-import NotificationBell      from './NotificationBell';
+import React, { useContext }    from 'react';
+import { Link, useNavigate }    from 'react-router-dom';
+import { AuthContext }          from '../contexts/AuthContext';
+import NotificationBell         from './NotificationBell';
 import './Navbar.css';
 
 export default function Navbar() {
     const { user, logout } = useContext(AuthContext);
     const nav = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        nav('/login');
+    };
 
     return (
         <nav className="navbar">
@@ -26,7 +30,7 @@ export default function Navbar() {
                             <li><Link to="/moderate">Moderation</Link></li>
                         )}
                         {user.roles.includes('ADMIN') && (
-                            <li><Link to="/admin">Admin Panel</Link></li>
+                            <li><Link to="/admin/users">Admin Panel</Link></li>
                         )}
                     </ul>
                 )}
@@ -34,7 +38,7 @@ export default function Navbar() {
                 <div className="auth-buttons">
                     {user ? (
                         <>
-                            {/* search button */}
+                            {/* 🔍 Search button */}
                             <button
                                 className="btn-search"
                                 onClick={() => nav('/search')}
@@ -42,8 +46,12 @@ export default function Navbar() {
                             >
                                 🔍
                             </button>
+
+                            {/* 🔔 Notifications */}
                             <NotificationBell />
-                            <button onClick={() => { logout(); nav('/login'); }} className="logout-btn">
+
+                            {/* Logout */}
+                            <button onClick={handleLogout} className="logout-btn">
                                 Logout
                             </button>
                         </>
