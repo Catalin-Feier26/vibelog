@@ -11,5 +11,7 @@ public enum NotificationType {
     /** Notification for a new follower. */
     FOLLOW,
     /** Notification for a post being reblogged. */
-    REBLOG
+    REBLOG,
+    /** Report has been resolved by a moderator. */
+    REPORT
 }
