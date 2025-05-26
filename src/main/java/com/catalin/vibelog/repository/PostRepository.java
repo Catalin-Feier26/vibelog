@@ -5,7 +5,9 @@ import com.catalin.vibelog.model.enums.PostStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,4 +50,34 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             PostStatus status2, String bodyFragment,
             Pageable pageable
     );
+    /** Returns the IDs of the posts sorted by number of likes desc. */
+    @Query("""
+      SELECT p.id
+      FROM Post p
+      LEFT JOIN p.likes l
+      GROUP BY p.id
+      ORDER BY COUNT(l) DESC
+      """)
+    List<Long> findTopLikedPostIds(Pageable limit);
+
+    /** Returns the IDs of the posts sorted by number of comments desc. */
+    @Query("""
+      SELECT p.id
+      FROM Post p
+      LEFT JOIN p.comments c
+      GROUP BY p.id
+      ORDER BY COUNT(c) DESC
+      """)
+    List<Long> findTopCommentedPostIds(Pageable limit);
+
+    /**
+     * Returns the IDs of the original posts sorted by how many times they’ve been reblogged.
+     * We do a sub‐select over Post to count how many reference p as originalPost.
+     */
+    @Query("""
+      SELECT p.id
+      FROM Post p
+      ORDER BY (SELECT COUNT(r) FROM Post r WHERE r.originalPost = p) DESC
+      """)
+    List<Long> findTopRebloggedPostIds(Pageable limit);
 }

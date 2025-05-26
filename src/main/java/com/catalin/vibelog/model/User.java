@@ -80,6 +80,45 @@ public abstract class User {
     @JsonIgnore
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private Set<Like> likes = new HashSet<>();
+
+    /**
+     * All comments authored by this user.
+     * Cleaned up when the user is deleted.
+     */
+    @JsonIgnore
+    @OneToMany(mappedBy = "author",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
+
+    /**
+     * All reports filed by this user.
+     * Cleaned up when the user is deleted.
+     */
+    @JsonIgnore
+    @OneToMany(mappedBy = "reporter",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Report> reports = new ArrayList<>();
+
+    /**
+     * All notifications sent to this user.
+     * Cleaned up when the user is deleted.
+     */
+    @JsonIgnore
+    @OneToMany(mappedBy = "recipient",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
 
     /**
      * Lifecycle callback to set the creation timestamp before persisting.

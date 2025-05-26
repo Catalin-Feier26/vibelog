@@ -37,6 +37,7 @@ public class Notification {
 
     /** The recipient user who will receive this notification. */
     @ManyToOne
+    @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
     /** Default no-args constructor required by JPA. */

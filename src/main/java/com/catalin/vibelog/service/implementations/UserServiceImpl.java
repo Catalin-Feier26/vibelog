@@ -1,16 +1,22 @@
 package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
+import com.catalin.vibelog.dto.request.RegisterRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
 import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
 import com.catalin.vibelog.exception.EmailAlreadyExistsException;
 import com.catalin.vibelog.exception.ResourceNotFoundException;
 import com.catalin.vibelog.exception.UsernameAlreadyExistsException;
+import com.catalin.vibelog.model.RegularUser;
 import com.catalin.vibelog.model.User;
+import com.catalin.vibelog.model.enums.Role;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.security.JwtUtil;
 import com.catalin.vibelog.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +31,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepo, JwtUtil jwtUtil) {
+    public UserServiceImpl(UserRepository userRepo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -172,4 +180,76 @@ public class UserServiceImpl implements UserService {
                 List.of(u.getRole().name())
         );
     }
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProfileResponse> listUsers(String usernameFragment, Pageable page) {
+        if (usernameFragment != null && !usernameFragment.isBlank()) {
+            return userRepo
+                    .findByUsernameContainingIgnoreCase(usernameFragment, page)
+                    .map(this::toDto);
+        }
+        return userRepo.findAll(page).map(this::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProfileResponse getUserById(Long userId) {
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
+        return toDto(u);
+    }
+
+    @Override
+    @Transactional
+    public ProfileResponse updateUserById(Long userId, ProfileUpdateRequest req) {
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
+        applyUpdates(u, req);
+        return toDto(userRepo.save(u));
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserById(Long userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found: id=" + userId);
+        }
+        userRepo.deleteById(userId);
+    }
+    /**
+     * {@inheritDoc}
+     * <p>Admin-only: checks uniqueness, hashes password, sets default USER role.</p>
+     */
+    @Override
+    @Transactional
+    public ProfileResponse createUser(RegisterRequest req) {
+        // 1) uniqueness
+        if (userRepo.existsByEmail(req.email())) {
+            throw new EmailAlreadyExistsException("Email already in use: " + req.email());
+        }
+        if (userRepo.existsByUsername(req.username())) {
+            throw new UsernameAlreadyExistsException("Username already in use: " + req.username());
+        }
+
+        // 2) build & save
+        User u = new RegularUser();
+        u.setEmail(req.email());
+        u.setUsername(req.username());
+        u.setPasswordHash(passwordEncoder.encode(req.password()));
+        u.setRole(Role.USER);
+        User saved = userRepo.save(u);
+
+        // 3) map to ProfileResponse
+        return new ProfileResponse(
+                saved.getId(),
+                saved.getEmail(),
+                saved.getUsername(),
+                saved.getBio(),
+                saved.getProfilePicture(),
+                saved.getCreatedAt(),
+                List.of(saved.getRole().name())
+        );
+    }
+
+
 }

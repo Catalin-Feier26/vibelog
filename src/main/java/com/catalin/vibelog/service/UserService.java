@@ -1,9 +1,12 @@
 package com.catalin.vibelog.service;
 
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
+import com.catalin.vibelog.dto.request.RegisterRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
 import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
 import com.catalin.vibelog.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service interface defining operations related to retrieving and updating user profiles.
@@ -71,4 +74,30 @@ public interface UserService {
      * @throws jakarta.persistence.EntityNotFoundException if no user with that username exists
      */
     User findByUsername(String username);
+    /**
+     * Return a paginated list of all users, optionally filtering by username fragment.
+     */
+    Page<ProfileResponse> listUsers(String usernameFragment, Pageable page);
+
+    /**
+     * Fetch a single user by their numerical ID.
+     */
+    ProfileResponse getUserById(Long userId);
+
+    /**
+     * Update any user's profile by ID (email, username, bio, picture).
+     */
+    ProfileResponse updateUserById(Long userId, ProfileUpdateRequest req);
+
+    /**
+     * Delete a user (and cascade‐delete their content).
+     */
+    void deleteUserById(Long userId);
+    /**
+     * Create a brand-new user (admin-only).
+     *
+     * @param req carries email, username, and raw password
+     * @return the profile of the newly created user
+     */
+    ProfileResponse createUser(RegisterRequest req);
 }
