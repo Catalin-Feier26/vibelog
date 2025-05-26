@@ -32,3 +32,18 @@
     color: red;
     margin: 1rem 0;
 }
+/* src/pages/AdminUsersPage.css */
+
+.analytics {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.analytics-box {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fafafa;
+}

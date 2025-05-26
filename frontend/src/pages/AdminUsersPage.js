@@ -1,96 +1,126 @@
+// src/pages/AdminUsersPage.jsx
 import React, { useEffect, useState } from 'react';
 import {
     getUsers,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getTopLikedPost,
+    getTopCommentedPost,
+    getTopRebloggedPost
 } from '../api/adminService';
+import PostCard from '../components/PostCard';
 import './AdminUsersPage.css';
 
 export default function AdminUsersPage() {
-    const [users, setUsers]           = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [error, setError]           = useState('');
-    const [page, setPage]             = useState(0);
-    const [size]                      = useState(50);
-    const [search, setSearch]         = useState('');
+    // — Users CRUD state —
+    const [users, setUsers]         = useState([]);
+    const [loading, setLoading]     = useState(true);
+    const [error, setError]         = useState('');
+    const [page, setPage]           = useState(0);
+    const [size]                    = useState(50);
+    const [search, setSearch]       = useState('');
+    const [newUser, setNewUser]     = useState({ email: '', username: '', password: '' });
+    const [editingId, setEditingId] = useState(null);
+    const [editData, setEditData]   = useState({ email: '', username: '' });
 
-    // new-user form
-    const [newUser, setNewUser]       = useState({ email: '', username: '', password: '' });
+    // — Analytics state —
+    const [topLiked, setTopLiked]           = useState(null);
+    const [topCommented, setTopCommented]   = useState(null);
+    const [topReblogged, setTopReblogged]   = useState(null);
 
-    // inline edit state
-    const [editingId, setEditingId]   = useState(null);
-    const [editData, setEditData]     = useState({ email: '', username: '' });
-
-    // load list (with optional search)
-    const load = async () => {
+    // load users + analytics
+    const loadAll = async () => {
         setError('');
         setLoading(true);
         try {
-            const res = await getUsers(search, page, size);
-            setUsers(res.data.content);
+            // users
+            const u = await getUsers(search, page, size);
+            setUsers(u.data.content);
+            // analytics
+            const [liked, commented, reblogged] = await Promise.all([
+                getTopLikedPost().catch(() => ({ data: null })),
+                getTopCommentedPost().catch(() => ({ data: null })),
+                getTopRebloggedPost().catch(() => ({ data: null }))
+            ]);
+            setTopLiked(liked.data);
+            setTopCommented(commented.data);
+            setTopReblogged(reblogged.data);
         } catch (e) {
             console.error(e);
-            setError('Could not fetch users');
+            setError('Could not fetch data');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { load(); }, [page, search]);
+    useEffect(() => { loadAll(); }, [page, search]);
 
-    // create handler
+    // user‐CRUD handlers (unchanged from before) …
     const handleCreate = async e => {
         e.preventDefault();
         try {
             await createUser(newUser);
             setNewUser({ email: '', username: '', password: '' });
-            load();
-        } catch (e) {
-            console.error(e);
+            loadAll();
+        } catch {
             alert('Failed to create user');
         }
     };
-
-    // start editing
-    const handleStartEdit = user => {
-        setEditingId(user.id);
-        setEditData({ email: user.email, username: user.username });
+    const handleStartEdit = u => {
+        setEditingId(u.id);
+        setEditData({ email: u.email, username: u.username });
     };
-
-    // save edit
     const handleSaveEdit = async id => {
         try {
             await updateUser(id, editData);
             setEditingId(null);
-            load();
-        } catch (e) {
-            console.error(e);
+            loadAll();
+        } catch {
             alert('Failed to update user');
         }
     };
-
-    // cancel edit
-    const handleCancelEdit = () => {
-        setEditingId(null);
-    };
-
-    // delete user
+    const handleCancelEdit = () => setEditingId(null);
     const handleDelete = async id => {
         if (!window.confirm(`Really delete user #${id}?`)) return;
         try {
             await deleteUser(id);
-            load();
-        } catch (e) {
-            console.error(e);
+            loadAll();
+        } catch {
             alert('Failed to delete user');
         }
     };
 
     return (
         <div className="admin-users-page">
-            <h1>Admin: User Management</h1>
+            <h1>Admin Panel</h1>
 
+            {/* ——— Analytics Section ——— */}
+            <section className="analytics">
+                <div className="analytics-box">
+                    <h2>Most Liked Post</h2>
+                    {topLiked
+                        ? <PostCard post={topLiked} />
+                        : <p>No post matches that.</p>
+                    }
+                </div>
+                <div className="analytics-box">
+                    <h2>Most Commented Post</h2>
+                    {topCommented
+                        ? <PostCard post={topCommented} />
+                        : <p>No post matches that.</p>
+                    }
+                </div>
+                <div className="analytics-box">
+                    <h2>Most Reblogged Post</h2>
+                    {topReblogged
+                        ? <PostCard post={topReblogged} />
+                        : <p>No post matches that.</p>
+                    }
+                </div>
+            </section>
+
+            {/* ——— New‐user form ——— */}
             <form className="new-user-form" onSubmit={handleCreate}>
                 <h2>Create new user</h2>
                 <input
@@ -125,16 +155,12 @@ export default function AdminUsersPage() {
 
             {error && <div className="error">{error}</div>}
             {loading ? (
-                <div>Loading users…</div>
+                <div>Loading…</div>
             ) : (
                 <table className="users-table">
                     <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Username</th>
-                        <th>Roles</th>
-                        <th>Actions</th>
+                        <th>ID</th><th>Email</th><th>Username</th><th>Roles</th><th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>

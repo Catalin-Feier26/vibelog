@@ -32,3 +32,21 @@ export const updateUser = (id, data) =>
  */
 export const deleteUser = id =>
     api.delete(`/admin/users/${id}`);
+
+/**
+ * Fetch the single most-liked post (returns PostResponse or null).
+ */
+export const getTopLikedPost = () =>
+    api.get('/admin/analytics/top-liked');
+
+/**
+ * Fetch the single most-commented post (returns PostResponse or null).
+ */
+export const getTopCommentedPost = () =>
+    api.get('/admin/analytics/top-commented');
+
+/**
+ * Fetch the single most-reblogged post (returns PostResponse or null).
+ */
+export const getTopRebloggedPost = () =>
+    api.get('/admin/analytics/top-reblogged');
