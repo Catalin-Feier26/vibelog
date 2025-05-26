@@ -8,6 +8,8 @@ import com.catalin.vibelog.events.ReblogEvent;
 import com.catalin.vibelog.events.ReportResolvedEvent;
 import com.catalin.vibelog.model.enums.NotificationType;
 import com.catalin.vibelog.service.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
  */
 @Component
 public class NotificationEventListener {
+    private static final Logger log = LoggerFactory.getLogger(NotificationEventListener.class);
 
     private final NotificationService notifService;
 
@@ -48,8 +51,10 @@ public class NotificationEventListener {
      * @param ev the event containing liker, postId, and postAuthorUsername
      */
     @EventListener
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleLike(LikeEvent ev) {
+        log.debug("▶️ Received LikeEvent for postId={}, liker={}, author={}",
+                ev.postId, ev.likerUsername, ev.postAuthorUsername);
         String content = "💖 @" + ev.likerUsername +
                 " liked your post #" + ev.postId;
         notifService.sendNotification(new NotificationRequestDTO(
@@ -68,8 +73,8 @@ public class NotificationEventListener {
      *
      * @param ev the event containing commenterUsername, postId, and postAuthorUsername
      */
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleComment(CommentEvent ev) {
         String content = "💬 @" + ev.commenterUsername +
                 " commented on your post #" + ev.postId;
@@ -89,8 +94,8 @@ public class NotificationEventListener {
      *
      * @param ev the event containing followerUsername and followedUsername
      */
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleFollow(FollowEvent ev) {
         String content = "➕ @" + ev.followerUsername +
                 " is now following you";
@@ -110,8 +115,8 @@ public class NotificationEventListener {
      *
      * @param ev the event containing rebloggerUsername, originalPostId, and originalAuthorUsername
      */
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReblog(ReblogEvent ev) {
         String content = "🔁 @" + ev.rebloggerUsername +
                 " reblogged your post #" + ev.originalPostId;
@@ -131,8 +136,8 @@ public class NotificationEventListener {
      *
      * @param ev the event containing reporterUsername, postId/commentId, and result
      */
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReportResolved(ReportResolvedEvent ev) {
         String target = (ev.postId != null)
                 ? "post #" + ev.postId

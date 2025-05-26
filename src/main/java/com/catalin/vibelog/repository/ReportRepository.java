@@ -49,4 +49,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
      * @return a page of reports
      */
     Page<Report> findByCommentId(Long commentId, Pageable pageable);
+    void deleteAllByPostId(Long postId);
+    void deleteAllByCommentId(Long commentId);
 }

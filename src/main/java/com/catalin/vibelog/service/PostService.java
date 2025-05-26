@@ -98,5 +98,11 @@ public interface PostService {
      * @return the total number of reblogs
      */
     int countReblogs(Long originalPostId);
+    /**
+     * Delete a post regardless of its author (moderator-only).
+     *
+     * @param postId ID of the post to drop
+     */
+    void deletePostAsModerator(Long postId);
 
 }

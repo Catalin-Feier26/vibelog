@@ -11,12 +11,14 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Default implementation of {@link FollowService},
  * using JPA repositories for persistence.
  */
 @Service
+@Transactional
 public class FollowServiceImpl implements FollowService {
 
     private final ApplicationEventPublisher publisher;
@@ -71,6 +73,7 @@ public class FollowServiceImpl implements FollowService {
 
     /** {@inheritDoc} */
     @Override
+
     public void unfollow(Long followerId, Long followeeId) {
         User follower = userRepo.findById(followerId)
                 .orElseThrow(() -> new EntityNotFoundException("User (follower) not found"));

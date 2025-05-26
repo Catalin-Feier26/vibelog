@@ -63,7 +63,17 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "original_post_id")
     private Post originalPost;
-
+    /**
+     * All posts that reblog _this_ post.
+     * Deleting this post will cascade‐remove every reblogged copy, and
+     * because orphanRemoval=true, removal is recursive.
+     */
+    @OneToMany(
+            mappedBy      = "originalPost",
+            cascade       = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Post> rebloggedPosts = new ArrayList<>();
     /** Tags associated with this post for search and filtering. */
     @ElementCollection
     private List<String> tags = new ArrayList<>();

@@ -45,6 +45,7 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public void sendNotification(NotificationRequestDTO req) {
+
         User recipient = userService.findByUsername(req.recipientUsername());
         Notification n = Notification.builder()
                 .type(req.type())

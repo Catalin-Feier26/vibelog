@@ -4,6 +4,8 @@ import com.catalin.vibelog.model.enums.ReportStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -30,11 +32,13 @@ public class Report {
     /** The post being reported, if applicable. */
     @ManyToOne
     @JoinColumn(name = "post_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
     /** The comment being reported, if applicable. */
     @ManyToOne
     @JoinColumn(name = "comment_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Comment comment;
 
     /** Explanation provided by the reporter describing the issue. */

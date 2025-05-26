@@ -44,4 +44,6 @@ public interface CommentService {
      * @param authorUsername the username of the user attempting the deletion
      */
     void deleteComment(Long commentId, String authorUsername);
+    void deleteCommentAsModerator(Long commentId);
+
 }

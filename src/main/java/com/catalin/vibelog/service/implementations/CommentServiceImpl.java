@@ -11,6 +11,7 @@ import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.repository.CommentRepository;
 import com.catalin.vibelog.repository.PostRepository;
+import com.catalin.vibelog.repository.ReportRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.CommentService;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,14 +34,17 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
 
     private final ApplicationEventPublisher publisher;
+    private final ReportRepository  reportRepo;
     private final CommentRepository commentRepo;
     private final PostRepository    postRepo;
     private final UserRepository    userRepo;
 
-    public CommentServiceImpl(ApplicationEventPublisher publisher,
+    public CommentServiceImpl(ReportRepository  reportRepo,
+                              ApplicationEventPublisher publisher,
                               CommentRepository commentRepo,
                               PostRepository postRepo,
                               UserRepository userRepo) {
+        this.reportRepo=reportRepo;
         this.publisher=publisher;
         this.commentRepo = commentRepo;
         this.postRepo    = postRepo;
@@ -123,6 +127,14 @@ public class CommentServiceImpl implements CommentService {
                     "User '" + authorUsername + "' is not the author of comment " + commentId);
         }
         commentRepo.delete(comment);
+    }
+    @Override
+    @Transactional
+    public void deleteCommentAsModerator(Long commentId) {
+        Comment c = commentRepo.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
+        reportRepo.deleteAllByCommentId(commentId);
+        commentRepo.delete(c);
     }
 
     /**

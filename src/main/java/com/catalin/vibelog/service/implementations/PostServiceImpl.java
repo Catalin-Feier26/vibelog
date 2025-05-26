@@ -9,10 +9,7 @@ import com.catalin.vibelog.exception.UserNotFoundException;
 import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.model.enums.PostStatus;
-import com.catalin.vibelog.repository.CommentRepository;
-import com.catalin.vibelog.repository.LikeRepository;
-import com.catalin.vibelog.repository.PostRepository;
-import com.catalin.vibelog.repository.UserRepository;
+import com.catalin.vibelog.repository.*;
 import com.catalin.vibelog.service.PostService;
 import org.springframework.cglib.core.Local;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,6 +38,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository    userRepo;
     private final CommentRepository commentRepo;
     private final LikeRepository    likeRepo;
+    private final ReportRepository reportRepo;
 
     /**
      * Constructs a new {@code PostServiceImpl} with the required repositories.
@@ -50,11 +48,13 @@ public class PostServiceImpl implements PostService {
      * @param commentRepo the repository managing {@link com.catalin.vibelog.model.Comment} entities
      * @param likeRepo    the repository managing {@link com.catalin.vibelog.model.Like} entities
      */
-    public PostServiceImpl(PostRepository postRepo,
+    public PostServiceImpl(ReportRepository reportRepo,
+                           PostRepository postRepo,
                            UserRepository userRepo,
                            CommentRepository commentRepo,
                            LikeRepository likeRepo,
                            ApplicationEventPublisher publisher) {
+        this.reportRepo  = reportRepo;
         this.postRepo    = postRepo;
         this.userRepo    = userRepo;
         this.commentRepo = commentRepo;
@@ -231,6 +231,19 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public int countReblogs(Long originalPostId) {
         return postRepo.countByOriginalPostId(originalPostId);
+    }
+    @Override
+    @Transactional
+    public void deletePostAsModerator(Long postId) {
+        // 1) ensure it exists
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
+
+        // 2) drop any reports pointing at it
+        reportRepo.deleteAllByPostId(postId);
+
+        // 3) now safely delete the post
+        postRepo.delete(post);
     }
 
 }
