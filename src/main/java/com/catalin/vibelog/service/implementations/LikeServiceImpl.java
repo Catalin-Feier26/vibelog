@@ -1,6 +1,7 @@
 package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.dto.response.LikeResponse;
+import com.catalin.vibelog.events.LikeEvent;
 import com.catalin.vibelog.exception.PostNotFoundException;
 import com.catalin.vibelog.model.Like;
 import com.catalin.vibelog.model.LikeId;
@@ -10,6 +11,7 @@ import com.catalin.vibelog.repository.LikeRepository;
 import com.catalin.vibelog.repository.PostRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.LikeService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +26,19 @@ import java.time.LocalDateTime;
 @Service
 public class LikeServiceImpl implements LikeService {
 
+    private final ApplicationEventPublisher publisher;
     private final LikeRepository likeRepo;
     private final PostRepository postRepo;
     private final UserRepository userRepo;
 
     public LikeServiceImpl(LikeRepository likeRepo,
                            PostRepository postRepo,
-                           UserRepository userRepo) {
+                           UserRepository userRepo,
+                           ApplicationEventPublisher publisher) {
         this.likeRepo = likeRepo;
         this.postRepo = postRepo;
         this.userRepo = userRepo;
+        this.publisher = publisher;
     }
 
     /**
@@ -45,7 +50,8 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(postId));
         User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + username));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Authenticated user not found: " + username));
 
         LikeId id = new LikeId(user.getId(), post.getId());
         boolean liked;
@@ -60,12 +66,19 @@ public class LikeServiceImpl implements LikeService {
             like.setLikedAt(LocalDateTime.now());
             likeRepo.save(like);
             liked = true;
+            if(liked && !username.equals(post.getAuthor().getUsername())) {
+                publisher.publishEvent(new LikeEvent(
+                        this,
+                        postId,
+                        username,
+                        post.getAuthor().getUsername()
+                ));
+            }
         }
 
         int total = likeRepo.countByIdPostId(postId);
         return new LikeResponse(postId, liked, total);
     }
-
     /**
      * {@inheritDoc}
      */

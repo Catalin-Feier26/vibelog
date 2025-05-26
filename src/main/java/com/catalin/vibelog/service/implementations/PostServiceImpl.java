@@ -2,6 +2,7 @@ package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.dto.request.PostRequest;
 import com.catalin.vibelog.dto.response.PostResponse;
+import com.catalin.vibelog.events.ReblogEvent;
 import com.catalin.vibelog.exception.PostNotFoundException;
 import com.catalin.vibelog.exception.UnauthorizedActionException;
 import com.catalin.vibelog.exception.UserNotFoundException;
@@ -14,6 +15,7 @@ import com.catalin.vibelog.repository.PostRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.PostService;
 import org.springframework.cglib.core.Local;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +36,7 @@ import java.time.LocalDateTime;
 @Service
 public class PostServiceImpl implements PostService {
 
+    private final ApplicationEventPublisher publisher;
     private final PostRepository    postRepo;
     private final UserRepository    userRepo;
     private final CommentRepository commentRepo;
@@ -50,11 +53,13 @@ public class PostServiceImpl implements PostService {
     public PostServiceImpl(PostRepository postRepo,
                            UserRepository userRepo,
                            CommentRepository commentRepo,
-                           LikeRepository likeRepo) {
+                           LikeRepository likeRepo,
+                           ApplicationEventPublisher publisher) {
         this.postRepo    = postRepo;
         this.userRepo    = userRepo;
         this.commentRepo = commentRepo;
         this.likeRepo    = likeRepo;
+        this.publisher   = publisher;
     }
 
     /**
@@ -76,6 +81,12 @@ public class PostServiceImpl implements PostService {
             Post original = postRepo.findById(req.originalPostId())
                     .orElseThrow(() -> new PostNotFoundException(req.originalPostId()));
             post.setOriginalPost(original);
+            publisher.publishEvent(new ReblogEvent(
+                    this,
+                    original.getId(),
+                    authorUsername,
+                    original.getAuthor().getUsername()
+            ));
         }
 
         Post saved = postRepo.save(post);

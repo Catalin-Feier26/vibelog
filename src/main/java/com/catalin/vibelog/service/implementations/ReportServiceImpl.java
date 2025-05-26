@@ -3,6 +3,7 @@ package com.catalin.vibelog.service.implementations;
 import com.catalin.vibelog.dto.request.ReportRequestDTO;
 import com.catalin.vibelog.dto.request.ReportStatusUpdateDTO;
 import com.catalin.vibelog.dto.response.ReportResponseDTO;
+import com.catalin.vibelog.events.ReportResolvedEvent;
 import com.catalin.vibelog.exception.CommentNotFoundException;
 import com.catalin.vibelog.exception.PostNotFoundException;
 import com.catalin.vibelog.exception.ReportNotFoundException;
@@ -18,6 +19,7 @@ import com.catalin.vibelog.repository.ReportRepository;
 import com.catalin.vibelog.service.ReportService;
 import com.catalin.vibelog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportServiceImpl implements ReportService {
 
+    private final ApplicationEventPublisher publisher;
     private final ReportRepository reportRepo;
     private final UserService userService;
     private final PostRepository postRepo;
@@ -36,11 +39,13 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     public ReportServiceImpl(
+            ApplicationEventPublisher publisher,
             ReportRepository reportRepo,
             UserService userService,
             PostRepository postRepo,
             CommentRepository commentRepo
     ) {
+        this.publisher=publisher;
         this.reportRepo    = reportRepo;
         this.userService   = userService;
         this.postRepo      = postRepo;
@@ -100,6 +105,16 @@ public class ReportServiceImpl implements ReportService {
 
         rep.setStatus(upd.status());
         Report saved = reportRepo.save(rep);
+        if(saved.getStatus().equals(ReportStatus.RESOLVED)) {
+            publisher.publishEvent(new ReportResolvedEvent(
+                    this,
+                    saved.getId(),
+                    saved.getReporter().getUsername(),
+                    saved.getPost() != null ? saved.getPost().getId() : null,
+                    saved.getComment() != null ? saved.getComment().getId() : null,
+                    saved.getStatus()
+            ));
+        }
         return toDto(saved);
     }
 

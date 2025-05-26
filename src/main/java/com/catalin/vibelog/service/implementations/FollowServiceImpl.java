@@ -1,5 +1,6 @@
 package com.catalin.vibelog.service.implementations;
 
+import com.catalin.vibelog.events.FollowEvent;
 import com.catalin.vibelog.model.Follow;
 import com.catalin.vibelog.model.FollowId;
 import com.catalin.vibelog.model.User;
@@ -8,6 +9,7 @@ import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.FollowService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,11 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class FollowServiceImpl implements FollowService {
 
+    private final ApplicationEventPublisher publisher;
     private final FollowRepository followRepo;
     private final UserRepository userRepo;
 
     @Autowired
-    public FollowServiceImpl(FollowRepository followRepo, UserRepository userRepo) {
+    public FollowServiceImpl(ApplicationEventPublisher publisher,FollowRepository followRepo, UserRepository userRepo) {
+        this.publisher=publisher;
         this.followRepo = followRepo;
         this.userRepo = userRepo;
     }
@@ -56,6 +60,12 @@ public class FollowServiceImpl implements FollowService {
             f.setFollower(follower);
             f.setFollowed(followee);
             followRepo.save(f);
+
+            publisher.publishEvent(new FollowEvent(
+                    this,
+                    follower.getUsername(),
+                    followee.getUsername()
+            ));
         }
     }
 

@@ -2,6 +2,7 @@ package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.dto.request.CommentRequest;
 import com.catalin.vibelog.dto.response.CommentResponse;
+import com.catalin.vibelog.events.CommentEvent;
 import com.catalin.vibelog.exception.CommentNotFoundException;
 import com.catalin.vibelog.exception.PostNotFoundException;
 import com.catalin.vibelog.exception.UnauthorizedActionException;
@@ -12,6 +13,7 @@ import com.catalin.vibelog.repository.CommentRepository;
 import com.catalin.vibelog.repository.PostRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.service.CommentService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +32,16 @@ import java.util.stream.Collectors;
 @Service
 public class CommentServiceImpl implements CommentService {
 
+    private final ApplicationEventPublisher publisher;
     private final CommentRepository commentRepo;
     private final PostRepository    postRepo;
     private final UserRepository    userRepo;
 
-    public CommentServiceImpl(CommentRepository commentRepo,
+    public CommentServiceImpl(ApplicationEventPublisher publisher,
+                              CommentRepository commentRepo,
                               PostRepository postRepo,
                               UserRepository userRepo) {
+        this.publisher=publisher;
         this.commentRepo = commentRepo;
         this.postRepo    = postRepo;
         this.userRepo    = userRepo;
@@ -58,6 +63,15 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthor(author);
         comment.setPost(post);
         Comment saved = commentRepo.save(comment);
+
+        publisher.publishEvent(new CommentEvent(
+                this,
+                post.getId(),
+                saved.getId(),
+                author.getUsername(),
+                post.getAuthor().getUsername()
+        ));
+
         return toDto(saved);
     }
 
