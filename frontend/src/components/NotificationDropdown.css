@@ -1,50 +1,116 @@
+/* NotificationDropdown.css */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+    animation: fadeIn 0.4s ease-out both;
+}
+.animate-fadeup {
+    animation: fadeUp 0.4s ease-out both;
+}
+
+/* Outer dropdown shell: now fully opaque */
 .notification-dropdown {
     position: absolute;
-    top: 2.5rem;
+    top: 3rem;
     right: 0;
-    width: 300px;
+    width: 320px;
     max-height: 400px;
-    background: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     overflow: hidden;
     z-index: 1000;
 }
+
+/* Header bar */
 .dropdown-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-dark);
+    border-bottom: 1px solid var(--color-primary);
 }
-.btn-read-all, .btn-close {
+.header-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+.header-actions button {
     background: none;
     border: none;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
     cursor: pointer;
+    transition: color 0.2s;
 }
+.btn-read-all:hover {
+    color: var(--color-primary);
+}
+.btn-close:hover {
+    color: var(--color-highlight);
+}
+
+/* Scrollable list container */
 .dropdown-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    max-height: calc(400px - 3rem);
     overflow-y: auto;
+    background: var(--color-bg-alt);
 }
+
+/* Divider between items */
+.dropdown-list li + li {
+    border-top: 1px solid var(--color-primary-light);
+}
+
+/* Notification rows */
 .notification-item {
-    padding: 0.5rem;
+    padding: 0.75rem 1rem;
     cursor: pointer;
+    transition: background 0.2s;
+    background: var(--color-bg-alt);
 }
+.notification-item:hover {
+    background: var(--color-bg-dark);
+}
+
+/* Unread vs read */
 .unseen .notification-item {
-    background: #f9f9f9;
+    background: var(--color-primary-light);
 }
 .seen .notification-item {
-    background: white;
+    background: var(--color-bg-alt);
 }
-.empty {
-    text-align: center;
-    padding: 1rem;
-    color: #888;
+
+/* Text styling */
+.notif-content {
+    margin: 0 0 0.25rem;
+    color: var(--color-text);
+    font-size: 0.95rem;
 }
 .notif-time {
     display: block;
-    color: #aaa;
+    color: var(--color-text);
+    opacity: 0.7;
     font-size: 0.75rem;
+}
+
+/* Empty state */
+.empty {
+    text-align: center;
+    padding: 1rem;
+    color: var(--color-text);
+    opacity: 0.7;
 }

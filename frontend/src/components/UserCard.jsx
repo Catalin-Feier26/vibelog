@@ -1,23 +1,10 @@
-// src/components/UserCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './UserCard.css';
 
-/**
- * A simple card showing a user’s avatar, username and bio,
- * and linking to their profile page.
- *
- * @param {{
- *   user: {
- *     username: string,
- *     profilePicture?: string,
- *     bio?: string
- *   }
- * }} props
- */
 export default function UserCard({ user }) {
     return (
-        <Link to={`/users/${user.username}`} className="user-card">
+        <Link to={`/users/${user.username}`} className="user-card animate-fadein">
             <img
                 className="user-card-avatar"
                 src={user.profilePicture || '/avatar-placeholder.png'}

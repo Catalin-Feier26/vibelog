@@ -1,208 +1,140 @@
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+    animation: fadeIn 0.6s ease-out both;
+}
+
 .post-card {
-    background: #fff;
-    border-radius: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius);
     padding: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.3s;
+    position: relative;
+}
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-.post-card header {
+.post-card.is-reblog {
+    border-left: 4px solid var(--color-accent);
+}
+
+.reblog-banner {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-primary-light);
+    background: rgba(255,255,255,0.1);
+}
+.reblog-banner strong,
+.reblog-banner .reblog-link {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.post-header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    color: #555;
+}
+.author-link strong {
+    background: linear-gradient(45deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    color: transparent;
+}
+.time-link span {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    opacity: 0.7;
 }
 
-.post-card header strong {
-    font-weight: 600;
-    color: #333;
-}
-
-.post-card p {
-    font-size: 1rem;
-    color: #444;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-}
-
-.post-card footer {
-    display: flex;
-    gap: 1rem;
-}
-
-/* Like button */
-.btn-like {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #6b73ff;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    transition: background 0.2s, color 0.2s;
-}
-
-.btn-like:hover {
-    background: rgba(107, 115, 255, 0.1);
-}
-
-.btn-like.liked {
-    color: #e74c3c;
-}
-
-.btn-like.liked:hover {
-    background: rgba(231, 76, 60, 0.1);
-}
-
-.btn-delete {
-    background: none;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-left: auto;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-
-    outline: none;
-    box-shadow: none;
-}
-
-.btn-delete:hover {
-    color: #e74c3c;
-}
-
-.btn-delete:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-.btn-comment {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #4a5568;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    transition: background 0.2s, color 0.2s;
-}
-
-.btn-comment:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-/* The panel that drops down under the post */
-.comment-panel {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-}
-
-.comment-panel .comment-list {
-    margin-left: 1rem;
-}
-.comment-panel .comment-form {
-    margin-left: 1rem;
-}
 .post-link {
     text-decoration: none;
     color: inherit;
 }
-.post-header .post-link {
-    display: flex;
-    justify-content: space-between;
-}
-.post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eee;
-}
-
-.post-header .post-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    text-decoration: none;
-    color: inherit;
-}
-
-.post-header strong {
-    font-weight: 600;
-    color: #333;
-}
-
-.post-header span {
-    font-size: 0.85rem;
-    color: #888;
-    white-space: nowrap;
-}
-
-.post-header .author-link {
-    text-decoration: none;
-    color: #333;
-    margin-right: auto;
-}
-
-.post-header .time-link {
-    text-decoration: none;
-    color: #888;
-    font-size: 0.85rem;
-}
-/* Highlight card when user reblogged it */
-.post-card.is-reblog {
-    background-color: #fafafa;
-    border-left: 4px solid #ccc;
-}
-
-/* Reblog banner at top */
-.reblog-banner {
-    font-size: 0.85rem;
-    color: #555;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid #eee;
-    background-color: #f0f0f0;
-}
-
-/* Link inside banner */
-.reblog-banner .reblog-link {
-    text-decoration: none;
-    font-weight: bold;
-    color: inherit;
-}
-
-/* Reblog button styling */
-.btn-reblog {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-left: 0.5rem;
+.post-body {
+    color: var(--color-text);
+    line-height: 1.6;
+    margin-bottom: 1rem;
     font-size: 1rem;
 }
 
-.btn-reblog.reblogged {
-    color: #4caf50;  /* green tint when reblogged */
-}
-.btn-report {
-    background: none;
-    border: none;
-    color: #e53935;
-    cursor: pointer;
-    margin-left: 0.5rem;
+.post-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-/* Ensure the card padding accommodates the report form */
-.post-card {
-    position: relative;
+.post-footer button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-like {
+    color: var(--color-primary);
+}
+.btn-like:hover {
+    background: rgba(161,137,231,0.1);
+}
+.btn-like.liked {
+    color: var(--color-highlight);
+}
+.btn-like.liked:hover {
+    background: rgba(178,34,34,0.1);
+}
+
+.btn-comment {
+    color: var(--color-text);
+}
+.btn-comment:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.btn-reblog {
+    color: var(--color-text);
+}
+.btn-reblog.reblogged {
+    color: var(--color-accent);
+}
+.btn-reblog:hover {
+    background: rgba(212,175,55,0.1);
+}
+
+.btn-delete {
+    margin-left: auto;
+    color: var(--color-text);
+}
+.btn-delete:hover {
+    color: var(--color-highlight);
+}
+
+.btn-report {
+    color: var(--color-accent);
+}
+.btn-report:hover {
+    color: var(--color-highlight);
+}
+
+.comment-panel {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-primary-light);
+}
+.comment-panel .comment-list,
+.comment-panel .comment-form {
+    margin-left: 1rem;
 }

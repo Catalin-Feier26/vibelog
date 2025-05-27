@@ -10,30 +10,24 @@ export default function DraftCard({ post, onDeleted, onUpdated }) {
     });
     const [error, setError]       = useState('');
 
-    // Delete handler
     const handleDelete = async () => {
         await deletePost(post.id);
-        onDeleted && onDeleted(post.id);
+        onDeleted?.(post.id);
     };
 
-    // Generic save function
     const save = async status => {
         setError('');
         try {
-            await updatePost(post.id, {
-                title:  form.title,
-                body:   form.body,
-                status
-            });
+            await updatePost(post.id, { ...form, status });
             setEditing(false);
-            onUpdated && onUpdated();
-        } catch (e) {
+            onUpdated?.();
+        } catch {
             setError('Failed to save');
         }
     };
 
     return (
-        <div className="draft-card">
+        <div className="draft-card animate-fadein">
             {isEditing ? (
                 <form
                     className="draft-edit-form"
@@ -89,9 +83,10 @@ export default function DraftCard({ post, onDeleted, onUpdated }) {
                 </form>
             ) : (
                 <>
-                    <h2 className="draft-title">{post.title}</h2>
-                    <p className="draft-body">{post.body}</p>
-
+                    <div className="draft-view">
+                        <h2 className="draft-title">{post.title}</h2>
+                        <p className="draft-body">{post.body}</p>
+                    </div>
                     <div className="draft-actions">
                         <button
                             className="btn-draft-edit"

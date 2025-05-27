@@ -1,8 +1,7 @@
-// src/components/CommentList.jsx
 import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import { deleteComment, updateComment } from '../api/commentService';
-import ReportForm from './ReportForm';
+import { AuthContext }                           from '../contexts/AuthContext';
+import { deleteComment, updateComment }          from '../api/commentService';
+import ReportForm                                from './ReportForm';
 import './CommentList.css';
 
 export default function CommentList({
@@ -11,36 +10,30 @@ export default function CommentList({
                                         onCommentUpdated
                                     }) {
     const { user } = useContext(AuthContext);
-
-    // local copy so we can mutate it for instant UI feedback
     const [comments, setComments]       = useState(initialComments);
     const [editingId, setEditingId]     = useState(null);
     const [editContent, setEditContent] = useState('');
     const [reportingId, setReportingId] = useState(null);
 
-    // sync local state when parent provides new data
     useEffect(() => {
         setComments(initialComments);
     }, [initialComments]);
 
-    // delete handler: remove immediately and notify parent
     const handleDelete = async id => {
         try {
             await deleteComment(id);
             setComments(cs => cs.filter(c => c.id !== id));
-            onCommentDeleted && onCommentDeleted();
-        } catch (err) {
-            console.error('Failed to delete comment', err);
+            onCommentDeleted?.();
+        } catch {
+            console.error('Failed to delete comment');
         }
     };
 
-    // start inline edit
-    const handleStartEdit = comment => {
-        setEditingId(comment.id);
-        setEditContent(comment.content);
+    const handleStartEdit = c => {
+        setEditingId(c.id);
+        setEditContent(c.content);
     };
 
-    // save inline edit: update backend & UI
     const handleSaveEdit = async id => {
         try {
             const res = await updateComment(id, { content: editContent });
@@ -52,15 +45,10 @@ export default function CommentList({
                 )
             );
             setEditingId(null);
-            onCommentUpdated && onCommentUpdated();
-        } catch (err) {
-            console.error('Failed to save comment edit', err);
+            onCommentUpdated?.();
+        } catch {
+            console.error('Failed to save comment edit');
         }
-    };
-
-    // cancel edit mode
-    const handleCancelEdit = () => {
-        setEditingId(null);
     };
 
     return (
@@ -70,44 +58,37 @@ export default function CommentList({
             )}
 
             {comments.map(c => {
-                const isAuthor  = user?.username === c.authorUsername;
-                const isEditing = editingId === c.id;
-                const isReporting = reportingId === c.id;
+                const isAuthor   = user?.username === c.authorUsername;
+                const isEditing  = editingId === c.id;
+                const isReporting= reportingId === c.id;
 
                 return (
-                    <li key={c.id} className="comment-item">
+                    <li key={c.id} className="comment-item animate-fadein">
                         <div className="comment-header">
-                            <strong>@{c.authorUsername}</strong>
+                            <strong className="comment-author">
+                                @{c.authorUsername}
+                            </strong>
                             <span className="comment-timestamp">
                 {new Date(c.createdAt).toLocaleTimeString()}
               </span>
-
-                            {isAuthor && !isEditing && (
-                                <>
-                                    <button
-                                        className="btn-edit-comment"
-                                        onClick={() => handleStartEdit(c)}
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button
-                                        className="btn-delete-comment"
-                                        onClick={() => handleDelete(c.id)}
-                                    >
-                                        🗑️
-                                    </button>
-                                </>
-                            )}
-
-                            {!isAuthor && !isEditing && (
-                                <button
-                                    className="btn-report-comment"
-                                    onClick={() =>
-                                        setReportingId(isReporting ? null : c.id)
-                                    }
-                                >
-                                    🚩
-                                </button>
+                            {!isEditing && (
+                                isAuthor
+                                    ? <>
+                                        <button
+                                            className="btn-edit-comment"
+                                            onClick={() => handleStartEdit(c)}
+                                        >✏️</button>
+                                        <button
+                                            className="btn-delete-comment"
+                                            onClick={() => handleDelete(c.id)}
+                                        >🗑️</button>
+                                    </>
+                                    : <button
+                                        className="btn-report-comment"
+                                        onClick={() =>
+                                            setReportingId(isReporting ? null : c.id)
+                                        }
+                                    >🚩</button>
                             )}
                         </div>
 
@@ -117,19 +98,16 @@ export default function CommentList({
                     rows={2}
                     value={editContent}
                     onChange={e => setEditContent(e.target.value)}
+                    className="edit-textarea"
                 />
                                 <button
                                     className="btn-save-comment"
                                     onClick={() => handleSaveEdit(c.id)}
-                                >
-                                    Save
-                                </button>
+                                >Save</button>
                                 <button
                                     className="btn-cancel-comment"
-                                    onClick={handleCancelEdit}
-                                >
-                                    Cancel
-                                </button>
+                                    onClick={() => setEditingId(null)}
+                                >Cancel</button>
                             </div>
                         ) : (
                             <p className="comment-content">{c.content}</p>

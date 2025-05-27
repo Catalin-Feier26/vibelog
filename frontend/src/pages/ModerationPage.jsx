@@ -1,5 +1,6 @@
-// src/pages/ModerationPage.jsx
+// ModerationPage.jsx
 import React, { useEffect, useState } from 'react';
+import { Link }                          from 'react-router-dom';
 import {
     getReportsByStatus,
     updateReportStatus
@@ -15,15 +16,13 @@ export default function ModerationPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState('');
 
-    // fetch the pending reports
     const load = async () => {
         setError('');
         setLoading(true);
         try {
             const res = await getReportsByStatus('PENDING', 0, 50);
             setReports(res.data.content);
-        } catch (e) {
-            console.error(e);
+        } catch {
             setError('Failed to load reports');
         } finally {
             setLoading(false);
@@ -34,19 +33,15 @@ export default function ModerationPage() {
         load();
     }, []);
 
-    // change status to REVIEWED or RESOLVED
     const handleStatus = async (id, status) => {
         try {
             await updateReportStatus(id, status);
-            // reload the list so we never show stale data
             load();
-        } catch (e) {
-            console.error(e);
+        } catch {
             alert('Could not update report status');
         }
     };
 
-    // delete the offending content (post or comment), then reload
     const handleDeleteContent = async r => {
         try {
             if (r.postId) {
@@ -54,83 +49,93 @@ export default function ModerationPage() {
             } else {
                 await deleteCommentAsMod(r.commentId);
             }
-
-            // after removing the content we *could* try to mark the report resolved,
-            // but often the report row itself has already been deleted on the backend
-            // so we quietly ignore a 404 from updateReportStatus
+            // resolve report if needed
             try {
                 await updateReportStatus(r.id, 'RESOLVED');
-            } catch (inner) {
-                if (!(inner.response && inner.response.status === 404)) {
-                    console.error('Failed to resolve report', inner);
-                }
-            }
-
-            // finally, reload the fresh list
+            } catch {}
             load();
-        } catch (e) {
-            console.error(e);
+        } catch {
             alert('Failed to delete content');
         }
     };
 
-    if (loading) return <div className="mod-page">Loading…</div>;
-    if (error)   return <div className="mod-page error">{error}</div>;
+    if (loading) {
+        return <div className="mod-page animate-fadein">Loading…</div>;
+    }
+    if (error) {
+        return <div className="mod-page animate-fadein error">{error}</div>;
+    }
     if (reports.length === 0) {
-        return <div className="mod-page empty">No pending reports.</div>;
+        return (
+            <div className="mod-page animate-fadein empty">
+                No pending reports.
+            </div>
+        );
     }
 
     return (
-        <div className="mod-page">
-            <h1>Moderation — Pending Reports</h1>
-            <table className="mod-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Reporter</th>
-                    <th>Target</th>
-                    <th>Reason</th>
-                    <th>When</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {reports.map(r => (
-                    <tr key={r.id}>
-                        <td>{r.id}</td>
-                        <td>@{r.reporterUsername}</td>
-                        <td>
-                            {r.postId
-                                ? <a href={`/posts/${r.postId}`}>Post #{r.postId}</a>
-                                : <span>Comment #{r.commentId}</span>
-                            }
-                        </td>
-                        <td className="reason">{r.reason}</td>
-                        <td>{new Date(r.reportedAt).toLocaleString()}</td>
-                        <td className="actions">
-                            <button
-                                onClick={() => handleStatus(r.id, 'REVIEWED')}
-                                className="btn-review"
-                            >
-                                Review
-                            </button>
-                            <button
-                                onClick={() => handleStatus(r.id, 'RESOLVED')}
-                                className="btn-resolve"
-                            >
-                                Resolve
-                            </button>
-                            <button
-                                onClick={() => handleDeleteContent(r)}
-                                className="btn-delete"
-                            >
-                                Delete Content
-                            </button>
-                        </td>
+        <div className="mod-page animate-fadein">
+            <h1 className="page-title animate-fadeup">
+                Moderation — Pending Reports
+            </h1>
+
+            <div className="table-wrapper animate-fadeup">
+                <table className="mod-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Reporter</th>
+                        <th>Target</th>
+                        <th className="reason-col">Reason</th>
+                        <th>When</th>
+                        <th>Actions</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {reports.map(r => (
+                        <tr key={r.id}>
+                            <td>{r.id}</td>
+                            <td>
+                                <Link to={`/users/${r.reporterUsername}`}>
+                                    @{r.reporterUsername}
+                                </Link>
+                            </td>
+                            <td>
+                                {r.postId ? (
+                                    <Link to={`/posts/${r.postId}`}>Post #{r.postId}</Link>
+                                ) : (
+                                    <span>Comment #{r.commentId}</span>
+                                )}
+                            </td>
+                            <td className="reason-col">{r.reason}</td>
+                            <td>
+                                {new Date(r.reportedAt).toLocaleString()}
+                            </td>
+                            <td className="actions">
+                                <button
+                                    onClick={() => handleStatus(r.id, 'REVIEWED')}
+                                    className="btn-review"
+                                >
+                                    Review
+                                </button>
+                                <button
+                                    onClick={() => handleStatus(r.id, 'RESOLVED')}
+                                    className="btn-resolve"
+                                >
+                                    Resolve
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteContent(r)}
+                                    className="btn-delete"
+                                >
+                                    Delete Content
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

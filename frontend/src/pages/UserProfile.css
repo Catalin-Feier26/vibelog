@@ -1,54 +1,106 @@
+/* UserProfile.css */
 
-.profile-page {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+    animation: fadeIn 0.6s ease-out both;
+}
+.animate-fadeup {
+    animation: fadeUp 0.6s ease-out both;
+}
+
+.user-profile-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: radial-gradient(
+            circle at top left,
+            var(--color-bg-alt),
+            var(--color-bg-dark)
+    );
+    padding: 2rem 1rem;
+    min-height: calc(100vh - var(--navbar-height));
+    color: var(--color-text);
 }
 
 .profile-header {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    width: 90%;
+    max-width: 800px;
+    margin-bottom: 2rem;
 }
 
 .avatar {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ddd;
+    border: 2px solid var(--color-primary-light);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.user-info h2 {
+.user-info {
+    flex: 1;
+}
+
+.username {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    color: transparent;
     margin: 0;
-    font-size: 1.5rem;
 }
 
-.user-info .bio {
+.bio {
     margin: 0.5rem 0;
-    color: #555;
+    font-size: 1rem;
+    color: var(--color-text);
+    opacity: 0.8;
 }
 
 .btn-follow {
-    background: #6b73ff;
+    background: var(--color-primary);
     color: #fff;
     border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 0.4rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius);
     cursor: pointer;
-    margin-right: 1rem;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.1s;
 }
-
 .btn-follow:hover {
-    background: #5763d1;
+    background: var(--color-primary-light);
+    transform: translateY(-1px);
 }
 
 .counts {
-    color: #666;
     font-size: 0.9rem;
+    color: var(--color-text);
+    opacity: 0.7;
+    margin-top: 0.5rem;
 }
 
+.posts-list {
+    width: 90%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
 .posts-list > * {
     margin-bottom: 1rem;
 }

@@ -14,7 +14,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="navbar">
+        <nav className="navbar animate-fadein">
             <div className="nav-container">
                 <Link to="/" className="logo">VibeLog</Link>
 
@@ -38,7 +38,6 @@ export default function Navbar() {
                 <div className="auth-buttons">
                     {user ? (
                         <>
-                            {/* 🔍 Search button */}
                             <button
                                 className="btn-search"
                                 onClick={() => nav('/search')}
@@ -46,11 +45,7 @@ export default function Navbar() {
                             >
                                 🔍
                             </button>
-
-                            {/* 🔔 Notifications */}
                             <NotificationBell />
-
-                            {/* Logout */}
                             <button onClick={handleLogout} className="logout-btn">
                                 Logout
                             </button>

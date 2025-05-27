@@ -1,54 +1,82 @@
-/* src/pages/PostFeed.css */
+/* PostsFeed.css */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+    animation: fadeIn 0.6s ease-out both;
+}
 
 .posts-feed {
-    max-width: 600px;
-    margin: 2rem auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 1rem;
+    align-items: center;
+    padding: 2rem 1rem;
+    min-height: calc(100vh - var(--navbar-height));
+    background: radial-gradient(
+            circle at top left,
+            var(--color-bg-alt),
+            var(--color-bg-dark)
+    );
+    color: var(--color-text);
 }
 
 .feed-header {
+    width: 90%;
+    max-width: 900px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1.5rem;
 }
 
 .feed-header h1 {
     margin: 0;
-    font-size: 1.75rem;
-    color: #2d3748;
+    font-size: 2rem;
+    background: linear-gradient(
+            45deg,
+            var(--color-primary),
+            var(--color-accent)
+    );
+    -webkit-background-clip: text;
+    color: transparent;
 }
 
 .btn-new-post {
-    padding: 0.5rem 1rem;
-    background: var(#6b73ff);
+    background: var(--color-primary);
     color: #fff;
-    font-size: 0.9rem;
-    border-radius: var(--radius, 0.5rem);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
     text-decoration: none;
-    transition: background 0.2s;
+    font-size: 0.9rem;
+    transition: background 0.3s, transform 0.2s;
 }
-
 .btn-new-post:hover {
-    background: #5969d0;
+    background: var(--color-primary-light);
+    transform: translateY(-1px);
 }
 
 .feed-status {
+    width: 90%;
+    max-width: 900px;
     text-align: center;
-    font-size: 0.95rem;
-    color: #666;
+    margin: 1rem 0;
+    font-size: 1rem;
+    opacity: 0.8;
 }
-
 .feed-status.loading {
     font-style: italic;
 }
-
 .feed-status.error {
-    color: #e74c3c;
+    color: var(--color-highlight);
+    opacity: 1;
+}
+.feed-status.empty {
+    opacity: 0.7;
 }
 
-.feed-status.empty {
-    color: #888;
+.posts-feed > .post-card {
+    width: 90%;
+    max-width: 900px;
 }

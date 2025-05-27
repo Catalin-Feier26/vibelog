@@ -1,21 +1,65 @@
-.drafts-page {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+/* DraftsPage.css */
+
+:root {
+    --page-padding:   1rem;
+    --grid-gap:       1.5rem;
+    /* make sure this matches your DraftCard max-width */
+    --draft-card-max: 350px;
 }
 
-.drafts-page h1 {
-    font-size: 1.75rem;
-    color: #2d3748;
-    text-align: center;
-    margin-bottom: 1.5rem;
+/* Fade-in helper */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadein {
+    animation: fadeIn 0.6s ease-out both;
+}
+
+.drafts-page {
+    width: 90%;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: var(--page-padding);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-text);
+}
+
+.page-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(
+            45deg,
+            var(--color-primary),
+            var(--color-accent)
+    );
+    -webkit-background-clip: text;
+    color: transparent;
 }
 
 .status {
+    width: 100%;
     text-align: center;
-    margin: 1.5rem 0;
-    color: #666;
+    margin: 1rem 0;
+    font-size: 1rem;
 }
-.status.error { color: #e74c3c; }
-.status.empty { color: #888; }
-.status.loading { font-style: italic; }
+.status.error   { color: var(--color-highlight); }
+.status.empty   { color: var(--color-text); opacity: 0.7; }
+.status.loading { color: var(--color-text); font-style: italic; }
+
+/* UPDATED grid: fix card width, center items */
+.drafts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--draft-card-max), 1fr));
+    gap: var(--grid-gap);
+    width: 100%;
+    justify-items: center;
+}
+
+/* Override card width so it never stretches beyond 350px */
+.draft-card {
+    width: 100%;
+    max-width: var(--draft-card-max);
+}

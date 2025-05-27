@@ -1,16 +1,16 @@
-// src/pages/UserProfile.jsx
+// UserProfile.jsx
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+import { useParams, Link }                   from 'react-router-dom';
+import { AuthContext }                       from '../contexts/AuthContext';
 import {
     isFollowing,
     followUser,
     unfollowUser,
     getFollowCounts
 } from '../api/followService';
-import { getUserProfile } from '../api/userService';
-import { getPublishedPostsByUser } from '../api/postService';
-import PostCard from '../components/PostCard';
+import { getUserProfile }                    from '../api/userService';
+import { getPublishedPostsByUser }           from '../api/postService';
+import PostCard                              from '../components/PostCard';
 import './UserProfile.css';
 
 export default function UserProfile() {
@@ -24,12 +24,10 @@ export default function UserProfile() {
     const [posts, setPosts]         = useState([]);
 
     useEffect(() => {
-        // 1. load profile info
         getUserProfile(other)
             .then(res => setProfile(res.data))
             .catch(console.error);
 
-        // 2. load follow state + counts (only if logged in)
         if (meUsername) {
             isFollowing(meUsername, other)
                 .then(setFollowing)
@@ -40,7 +38,6 @@ export default function UserProfile() {
                 .catch(console.error);
         }
 
-        // 3. load published posts
         getPublishedPostsByUser(other, 0, 15)
             .then(res => setPosts(res.data.content))
             .catch(console.error);
@@ -49,31 +46,27 @@ export default function UserProfile() {
     const toggleFollow = () => {
         const action = following ? unfollowUser : followUser;
         action(meUsername, other)
-            .then(() => {
-                // flip state
-                setFollowing(f => !f);
-                // and refresh counts
-                return getFollowCounts(meUsername, other);
-            })
+            .then(() => getFollowCounts(meUsername, other))
             .then(setCounts)
+            .then(() => setFollowing(f => !f))
             .catch(console.error);
     };
 
     if (!profile) {
-        return <div className="profile-page">Loading…</div>;
+        return <div className="user-loading">Loading…</div>;
     }
 
     return (
-        <div className="profile-page">
-            <div className="profile-header">
+        <div className="user-profile-page animate-fadein">
+            <div className="profile-header animate-fadeup">
                 <img
                     className="avatar"
                     src={profile.profilePicture || '/avatar-placeholder.png'}
-                    alt={`${other}'s avatar`}
+                    alt={`@${other}’s avatar`}
                 />
                 <div className="user-info">
-                    <h2>@{profile.username}</h2>
-                    <p className="bio">{profile.bio}</p>
+                    <h2 className="username">@{profile.username}</h2>
+                    {profile.bio && <p className="bio">{profile.bio}</p>}
                     {meUsername && (
                         <button onClick={toggleFollow} className="btn-follow">
                             {following ? 'Unfollow' : 'Follow'}
@@ -85,7 +78,7 @@ export default function UserProfile() {
                     </p>
                 </div>
             </div>
-            <hr />
+
             <div className="posts-list">
                 {posts.map(p => (
                     <PostCard key={p.id} post={p} />

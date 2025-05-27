@@ -3,7 +3,6 @@ import { reportPost, reportComment } from '../api/reportService';
 import './ReportForm.css';
 
 export default function ReportForm({ targetId, type, onCancel, onReported }) {
-    // type === 'post' or 'comment'
     const [reason, setReason] = useState('');
     const [error, setError]   = useState('');
 
@@ -16,14 +15,14 @@ export default function ReportForm({ targetId, type, onCancel, onReported }) {
             } else {
                 await reportComment(targetId, reason);
             }
-            onReported && onReported();
+            onReported?.();
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to submit report');
         }
     };
 
     return (
-        <form className="report-form" onSubmit={handleSubmit}>
+        <form className="report-form animate-fadein" onSubmit={handleSubmit}>
             {error && <div className="report-error">{error}</div>}
             <textarea
                 value={reason}

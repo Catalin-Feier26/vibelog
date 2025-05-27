@@ -1,5 +1,9 @@
+// NotificationBell.jsx
 import React, { useState, useEffect } from 'react';
-import { getNotificationCount, markAllNotificationsRead } from '../api/notificationService';
+import {
+    getNotificationCount,
+    markAllNotificationsRead
+} from '../api/notificationService';
 import NotificationDropdown from './NotificationDropdown';
 import './NotificationBell.css';
 
@@ -27,15 +31,17 @@ export default function NotificationBell() {
         const next = !open;
         setOpen(next);
         if (next && count > 0) {
-            markAllNotificationsRead().then(() => setCount(0)).catch();
+            markAllNotificationsRead()
+                .then(() => setCount(0))
+                .catch();
         }
     };
 
     return (
-        <div className="notification-bell">
+        <div className="notification-bell animate-fadein">
             <button className="bell-button" onClick={toggle}>
                 🔔
-                {count > 0 && <span className="badge">{count}</span>}
+                {count > 0 && <span className="badge animate-bounce">{count}</span>}
             </button>
             {open && <NotificationDropdown onClose={() => setOpen(false)} />}
         </div>

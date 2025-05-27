@@ -1,29 +1,43 @@
 /* Register.css */
+
+/* Reuse your global tokens from index.css */
+:root {
+    --navbar-height: 5rem;
+}
+
+/* Centered page under the navbar */
 .register-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #a8e063, #56ab2f);
+    min-height: calc(100vh - var(--navbar-height));
+    background: linear-gradient(
+            135deg,
+            var(--color-bg-dark),
+            var(--color-bg-alt)
+    );
 }
 
+/* The form card */
 .register-form {
-    background: #fff;
+    background: var(--color-text); /* off-white */
     padding: 2.5rem;
     border-radius: 1rem;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
-    animation: fadeInDown 0.5s ease-out both;
+    animation: scaleIn 0.5s ease-out both;
 }
 
+/* Heading */
 .register-form h2 {
     font-size: 2rem;
     margin-bottom: 1rem;
     text-align: center;
-    color: #2c3e50;
+    color: var(--color-bg-dark);
 }
 
+/* Form groups */
 .register-form .form-group {
     margin-bottom: 1rem;
     animation: fadeIn 0.6s ease-out both;
@@ -32,24 +46,34 @@
 .register-form .form-group:nth-child(2) { animation-delay: 0.3s; }
 .register-form .form-group:nth-child(3) { animation-delay: 0.4s; }
 
+/* Labels now light-to-dark contrast */
+.register-form .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-bg-dark);
+}
+
+/* Inputs */
 .register-form input {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid #ccc;
     border-radius: 0.75rem;
     font-size: 1rem;
+    color: #222;
     transition: border-color 0.3s;
 }
 .register-form input:focus {
-    border-color: #56ab2f;
+    border-color: var(--color-primary);
     outline: none;
 }
 
+/* Submit button uses your gold accent */
 .register-form button {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #56ab2f;
-    color: #fff;
+    background: var(--color-accent);
+    color: var(--color-text);
     font-size: 1rem;
     font-weight: 600;
     border: none;
@@ -60,27 +84,26 @@
 }
 .register-form button:hover {
     transform: scale(1.05);
-    background: #4a8a2b;
+    background: #b4942f; /* darker gold */
 }
 
+/* Error styling */
 .error-msg {
-    color: #e74c3c;
+    color: var(--color-highlight);
     margin-bottom: 1rem;
     text-align: center;
     animation: shake 0.3s ease-in-out both;
 }
 
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* Animations */
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
 }
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-
-/* reuse same shake keyframes as in Login.css */
 @keyframes shake {
     10%, 90% { transform: translateX(-1px); }
     20%, 80% { transform: translateX(2px); }

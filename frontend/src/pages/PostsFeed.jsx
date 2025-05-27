@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getAllPosts, deletePost } from '../api/postService';
-import PostCard from '../components/PostCard';
+import { Link }                      from 'react-router-dom';
+import { getAllPosts, deletePost }   from '../api/postService';
+import PostCard                      from '../components/PostCard';
 import './PostFeed.css';
 
 export default function PostsFeed() {
@@ -31,17 +31,16 @@ export default function PostsFeed() {
             await deletePost(id);
             load();
         } catch {
-            // optionally show an error toast
+            // optionally toast error
         }
     };
 
-    // called when a post is reblogged/un-reblogged
     const handleReblog = () => {
         load();
     };
 
     return (
-        <div className="posts-feed">
+        <div className="posts-feed animate-fadein">
             <div className="feed-header">
                 <h1>Feed</h1>
                 <Link to="/posts/new" className="btn-new-post">
@@ -55,15 +54,14 @@ export default function PostsFeed() {
                 <div className="feed-status empty">No posts yet.</div>
             )}
 
-            {!loading &&
-                posts.map(p => (
-                    <PostCard
-                        key={p.id}
-                        post={p}
-                        onDeleted={handleDeleted}
-                        onReblog={handleReblog}
-                    />
-                ))}
+            {!loading && posts.map(p => (
+                <PostCard
+                    key={p.id}
+                    post={p}
+                    onDeleted={handleDeleted}
+                    onReblog={handleReblog}
+                />
+            ))}
         </div>
     );
 }

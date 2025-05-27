@@ -1,14 +1,26 @@
 /* Login.css */
+
+/* Pull in your palette (if not already in this file) */
+:root {
+    --color-text:      #F4F0FF;  /* off-white for readability */
+    --navbar-height:   5rem;     /* same as your .main-content padding */
+}
+
+/* Center the form but subtract the navbar height */
 .login-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #6b73ff, #000dff);
+    /* instead of min-height:100vh, subtract the nav height so it fits exactly */
+    min-height: calc(100vh - var(--navbar-height));
+    background: linear-gradient(135deg, #1A0E2D, #2B1E44);
+    /* if you still wrap in .main-content, you can also add:
+       padding-top: 0;  to override the 5rem there */
 }
 
+/* Form styling */
 .login-form {
-    background: #fff;
+    background: var(--color-bg-alt, #fff); /* fallback if you haven’t imported the CSS variables */
     padding: 2.5rem;
     border-radius: 1rem;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
@@ -17,37 +29,49 @@
     animation: scaleIn 0.5s ease-out both;
 }
 
+/* Headings */
 .login-form h2 {
     font-size: 2rem;
     margin-bottom: 1rem;
     text-align: center;
-    color: #2c3e50;
+    color: var(--color-text, #2c3e50);
 }
 
-.login-form .form-group {
-    margin-bottom: 1rem;
-    animation: fadeIn 0.6s ease-out both;
+/* Make labels light */
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
 }
-.login-form .form-group:nth-child(1) { animation-delay: 0.2s; }
-.login-form .form-group:nth-child(2) { animation-delay: 0.3s; }
 
+/* Inputs: keep the dark border but light placeholder/text */
 .login-form input {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid #ccc;
     border-radius: 0.75rem;
     font-size: 1rem;
+    color: #222;
     transition: border-color 0.3s;
 }
 .login-form input:focus {
-    border-color: #6b73ff;
+    border-color: var(--color-primary, #6b73ff);
     outline: none;
 }
 
+/* Error message */
+.error-msg {
+    color: var(--color-highlight, #e74c3c);
+    margin-bottom: 1rem;
+    text-align: center;
+    animation: shake 0.3s ease-in-out both;
+}
+
+/* Button */
 .login-form button {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: #6b73ff;
+    background: var(--color-primary, #6b73ff);
     color: #fff;
     font-size: 1rem;
     font-weight: 600;
@@ -59,26 +83,17 @@
 }
 .login-form button:hover {
     transform: scale(1.05);
-    background: #5969d0;
-}
-
-.error-msg {
-    color: #e74c3c;
-    margin-bottom: 1rem;
-    text-align: center;
-    animation: shake 0.3s ease-in-out both;
+    background: var(--color-primary-light, #5969d0);
 }
 
 @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.8); }
     to   { opacity: 1; transform: scale(1); }
 }
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-
 @keyframes shake {
     10%, 90% { transform: translateX(-1px); }
     20%, 80% { transform: translateX(2px); }

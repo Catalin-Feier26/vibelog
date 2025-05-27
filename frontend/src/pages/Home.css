@@ -1,39 +1,105 @@
 /* Home.css */
+
+/* Make sure these vars are defined in your global index.css:
+   --navbar-height, --color-bg-dark, --color-bg-alt,
+   --color-primary, --color-accent, --color-text, --radius */
+
 .home-page {
+    position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 60px);
-    padding: 2rem;
-    background: radial-gradient(circle at top left, #f0f4ff, #d9e2ff);
-    animation: fadeInUp 0.7s ease-out both;
+    min-height: calc(100vh - var(--navbar-height));
+    background: radial-gradient(
+            circle at top left,
+            var(--color-bg-alt),
+            var(--color-bg-dark)
+    );
+    overflow: hidden;
 }
 
-.home-page .welcome-title {
+/* Decorative floating circles */
+.home-page::before,
+.home-page::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 6s ease-in-out infinite alternate;
+}
+.home-page::before {
+    width: 200px;
+    height: 200px;
+    background: var(--color-primary);
+    top: -50px;
+    left: -50px;
+}
+.home-page::after {
+    width: 300px;
+    height: 300px;
+    background: var(--color-accent);
+    bottom: -100px;
+    right: -100px;
+}
+
+@keyframes float {
+    to { transform: translateY(20px) translateX(20px); }
+}
+
+/* Glass-morphism card */
+.welcome-card {
+    position: relative;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 3rem 2rem;
+    border-radius: 1rem;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: fadeInUp 0.8s ease-out both;
+    z-index: 1;
+}
+
+/* Gradient-clipped title */
+.welcome-title {
     font-size: 3rem;
     font-weight: 700;
-    color: #2c3e50;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    color: transparent;
     margin-bottom: 1rem;
     animation: slideInLeft 0.6s ease-out both;
 }
 
-.home-page .welcome-subtitle {
-    font-size: 1.5rem;
-    color: #34495e;
-    animation: fadeIn 0.8s ease-out both;
+/* Subtitle with badges */
+.welcome-subtitle {
+    font-size: 1.25rem;
+    color: var(--color-text);
+    animation: fadeIn 1s ease-out both;
+}
+.role-badge {
+    display: inline-block;
+    background: var(--color-primary);
+    color: var(--color-text);
+    padding: 0.25rem 0.75rem;
+    margin: 0 0.5rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+.role-badge:hover {
+    transform: scale(1.05);
 }
 
+/* Reused animations */
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(40px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-50px); }
+    from { opacity: 0; transform: translateX(-60px); }
     to   { opacity: 1; transform: translateX(0); }
 }
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }

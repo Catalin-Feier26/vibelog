@@ -1,8 +1,7 @@
-// src/components/PostCard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toggleLike, getLikes } from '../api/likeService';
-import { getCommentsForPost }   from '../api/commentService';
+import { getCommentsForPost } from '../api/commentService';
 import {
     getReblogState,
     getReblogCount,
@@ -15,23 +14,17 @@ import ReportForm from './ReportForm';
 import './PostCard.css';
 
 export default function PostCard({ post, onDeleted, onReblog }) {
-    // Like state
     const [likesCount, setLikesCount]     = useState(post.likeCount || 0);
     const [likedByMe, setLikedByMe]       = useState(false);
-
-    // Comment state
     const [commentCount, setCommentCount] = useState(0);
     const [comments, setComments]         = useState([]);
     const [showComments, setShowComments] = useState(false);
 
-    // Reblog state
-    const [reblogged, setReblogged]       = useState(false);
-    const [reblogCount, setReblogCount]   = useState(post.reblogCount || 0);
+    const [reblogged, setReblogged]     = useState(false);
+    const [reblogCount, setReblogCount] = useState(post.reblogCount || 0);
 
-    // Report state
-    const [reporting, setReporting]       = useState(false);
+    const [reporting, setReporting] = useState(false);
 
-    // Fetch initial counts & states
     useEffect(() => {
         getLikes(post.id)
             .then(res => {
@@ -53,7 +46,6 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             .catch(console.error);
     }, [post.id]);
 
-    // Handlers
     const handleLike = async () => {
         try {
             const res = await toggleLike(post.id);
@@ -79,9 +71,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
         setShowComments(v => !v);
     };
 
-    const handleDelete = () => {
-        onDeleted && onDeleted(post.id);
-    };
+    const handleDelete = () => onDeleted?.(post.id);
 
     const handleReblog = async () => {
         try {
@@ -93,19 +83,21 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                 setReblogCount(c => c + 1);
             }
             setReblogged(r => !r);
-            onReblog && onReblog();
+            onReblog?.();
         } catch (e) {
             console.error(e);
         }
     };
 
     return (
-        <div className={`post-card${reblogged ? ' is-reblog' : ''}`}>
-            {/* Banner for reblogs */}
+        <div className={`post-card animate-fadein ${reblogged ? 'is-reblog' : ''}`}>
             {post.originalPostId && (
                 <div className="reblog-banner">
                     🔁 <strong>@{post.authorUsername}</strong> reblogged{' '}
-                    <Link to={`/posts/${post.originalPostId}`} className="reblog-link">
+                    <Link
+                        to={`/posts/${post.originalPostId}`}
+                        className="reblog-link"
+                    >
                         @{post.originalAuthorUsername}
                     </Link>
                 </div>
@@ -121,13 +113,13 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             </header>
 
             <Link to={`/posts/${post.id}`} className="post-link">
-                <p>{post.body}</p>
+                <p className="post-body">{post.body}</p>
             </Link>
 
             <footer className="post-footer">
                 <button
                     onClick={handleLike}
-                    className={likedByMe ? 'btn-like liked' : 'btn-like'}
+                    className={`btn-like ${likedByMe ? 'liked' : ''}`}
                 >
                     {likedByMe ? '💔' : '❤️'} {likesCount}
                 </button>
@@ -138,7 +130,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
 
                 <button
                     onClick={handleReblog}
-                    className={reblogged ? 'btn-reblog reblogged' : 'btn-reblog'}
+                    className={`btn-reblog ${reblogged ? 'reblogged' : ''}`}
                 >
                     {reblogged ? '🔁' : '↪️'} {reblogCount}
                 </button>
@@ -147,7 +139,6 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                     🗑️
                 </button>
 
-                {/* Report button */}
                 <button
                     onClick={() => setReporting(r => !r)}
                     className="btn-report"
@@ -156,7 +147,6 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                 </button>
             </footer>
 
-            {/* Inline report form */}
             {reporting && (
                 <ReportForm
                     type="post"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPost } from '../api/postService';
+import { useNavigate }     from 'react-router-dom';
+import { createPost }      from '../api/postService';
 import './NewPostPage.css';
 
 export default function NewPostPage() {
@@ -20,8 +20,8 @@ export default function NewPostPage() {
     };
 
     return (
-        <div className="new-post-page">
-            <form className="new-post-form" onSubmit={e => e.preventDefault()}>
+        <div className="new-post-page animate-fadein">
+            <form className="new-post-form animate-fadeup" onSubmit={e => e.preventDefault()}>
                 <h2>Create New Post</h2>
                 {error && <div className="form-error">{error}</div>}
 

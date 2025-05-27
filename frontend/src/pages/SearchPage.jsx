@@ -1,13 +1,12 @@
-// src/pages/SearchPage.jsx
-import React, { useState }       from 'react';
+import React, { useState } from 'react';
 import { searchUsers, searchPosts } from '../api/searchService';
-import PostCard                  from '../components/PostCard';
+import PostCard  from '../components/PostCard';
+import UserCard  from '../components/UserCard';
 import './SearchPage.css';
-import UserCard from '../components/UserCard';
 
 export default function SearchPage() {
     const [query, setQuery]     = useState('');
-    const [type, setType]       = useState('posts'); // or 'users'
+    const [type, setType]       = useState('posts');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError]     = useState('');
@@ -15,7 +14,6 @@ export default function SearchPage() {
     const handleSearch = async e => {
         e.preventDefault();
         if (!query.trim()) return;
-
         setLoading(true);
         setError('');
         try {
@@ -32,9 +30,10 @@ export default function SearchPage() {
     };
 
     return (
-        <div className="search-page">
+        <div className="search-page animate-fadein">
             <h1>Search</h1>
-            <form className="search-form" onSubmit={handleSearch}>
+
+            <form className="search-form animate-fadeup" onSubmit={handleSearch}>
                 <input
                     type="text"
                     className="search-input"
@@ -55,17 +54,14 @@ export default function SearchPage() {
 
             {loading && <div className="status">Searching…</div>}
             {error   && <div className="status error">{error}</div>}
-            {!loading && results.length === 0 && query && (
+            {!loading && !error && results.length === 0 && query && (
                 <div className="status empty">No results</div>
             )}
 
             <div className="results-list">
-                {type === 'users' && results.map(u => (
-                    <UserCard key={u.username} user={u} />))}
-
-                {type === 'posts' && results.map(p => (
-                    <PostCard key={p.id} post={p} />
-                ))}
+                {type === 'users'
+                    ? results.map(u => <UserCard key={u.username} user={u} />)
+                    : results.map(p => <PostCard key={p.id} post={p} />)}
             </div>
         </div>
     );

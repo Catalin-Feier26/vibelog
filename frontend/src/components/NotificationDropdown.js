@@ -33,13 +33,17 @@ export default function NotificationDropdown({ onClose }) {
     };
 
     return (
-        <div className="notification-dropdown">
-            <div className="dropdown-header">
-                <span>Notifications</span>
-                <button onClick={handleReadAll} className="btn-read-all">
-                    Mark all read
-                </button>
-                <button onClick={onClose} className="btn-close">✖️</button>
+        <div className="notification-dropdown animate-fadein">
+            <div className="dropdown-header animate-fadeup">
+                <span className="header-title">Notifications</span>
+                <div className="header-actions">
+                    <button onClick={handleReadAll} className="btn-read-all">
+                        Mark All Read
+                    </button>
+                    <button onClick={onClose} className="btn-close">
+                        ✖
+                    </button>
+                </div>
             </div>
             <ul className="dropdown-list">
                 {notes.length === 0 && (

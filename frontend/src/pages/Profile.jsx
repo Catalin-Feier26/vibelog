@@ -5,7 +5,6 @@ import { getMyProfile, updateMyProfile } from '../api/userService';
 
 export default function Profile() {
     const { user, setUser, setToken } = useContext(AuthContext);
-
     const [form, setForm] = useState({
         email: '',
         username: '',
@@ -13,66 +12,60 @@ export default function Profile() {
         profilePicture: '',
         coverPhoto: ''
     });
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState('');
-    const [success, setSuccess]   = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    /* ─────────────────────────────────────────
-       Fetch my profile once on mount
-    ────────────────────────────────────────── */
     useEffect(() => {
         getMyProfile()
             .then(res => {
                 const d = res.data;
                 setForm({
-                    email:          d.email  ?? '',
-                    username:       d.username ?? '',
-                    bio:            d.bio ?? '',
+                    email:          d.email         ?? '',
+                    username:       d.username      ?? '',
+                    bio:            d.bio           ?? '',
                     profilePicture: d.profilePicture ?? '',
-                    coverPhoto:     d.coverPhoto ?? ''      // new!
+                    coverPhoto:     d.coverPhoto     ?? ''
                 });
             })
             .catch(() => setError('Failed to load profile'))
             .finally(() => setLoading(false));
     }, []);
 
-    /* ─────────────────────────────────────────
-       Handlers
-    ────────────────────────────────────────── */
     const handleChange = e =>
         setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
     const handleSubmit = async e => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
+        setError(''); setSuccess('');
         try {
             const { token, profile } = await updateMyProfile(form);
-
-            // swap JWT + update user context
             setToken(token);
-            const newUser = { ...user, username: profile.username, email: profile.email, roles: profile.roles };
+            const newUser = {
+                ...user,
+                username: profile.username,
+                email:    profile.email,
+                roles:    profile.roles
+            };
             setUser(newUser);
             sessionStorage.setItem('user', JSON.stringify(newUser));
-
             setSuccess('Profile updated!');
         } catch (err) {
             setError(err.response?.data?.message || 'Update failed');
         }
     };
 
-    if (loading) return <div className="profile-loading">Loading…</div>;
+    if (loading)
+        return <div className="profile-loading">Loading…</div>;
 
     const avatarSrc =
         form.profilePicture ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(form.username || 'User')}&size=256&background=random`;
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            form.username || 'User'
+        )}&size=256&background=random`;
 
-    /* ─────────────────────────────────────────
-       JSX
-    ────────────────────────────────────────── */
     return (
         <div className="profile-page">
-            {/* Hero / cover image */}
             <div
                 className="cover-photo"
                 style={{
@@ -82,34 +75,34 @@ export default function Profile() {
                     })`
                 }}
             />
-
-            {/* Floating card */}
             <div className="profile-card">
                 <div className="avatar-wrapper">
                     <img src={avatarSrc} alt="avatar" className="avatar" />
                 </div>
-
                 <h2 className="display-name">@{form.username}</h2>
                 {form.bio && <p className="bio-text">{form.bio}</p>}
-
                 {error && !success && <div className="error-msg">{error}</div>}
                 {success && <div className="success-msg">{success}</div>}
-
                 <form className="profile-form" onSubmit={handleSubmit}>
-                    <h3>Edit profile</h3>
-
+                    <h3>Edit Profile</h3>
                     <div className="form-grid">
                         <div className="form-group">
                             <label htmlFor="email">Email</label>
-                            <input id="email" type="email" name="email" value={form.email} onChange={handleChange} required />
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
-
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
                             <input
                                 id="username"
-                                type="text"
                                 name="username"
+                                type="text"
                                 value={form.username}
                                 onChange={handleChange}
                                 minLength={3}
@@ -117,37 +110,39 @@ export default function Profile() {
                                 required
                             />
                         </div>
-
                         <div className="form-group bio">
                             <label htmlFor="bio">Bio</label>
-                            <textarea id="bio" name="bio" value={form.bio} onChange={handleChange} maxLength={500} />
+                            <textarea
+                                id="bio"
+                                name="bio"
+                                value={form.bio}
+                                onChange={handleChange}
+                                maxLength={500}
+                            />
                         </div>
-
                         <div className="form-group">
-                            <label htmlFor="profilePicture">Profile picture URL</label>
+                            <label htmlFor="profilePicture">Profile Picture URL</label>
                             <input
                                 id="profilePicture"
-                                type="text"
                                 name="profilePicture"
+                                type="text"
                                 value={form.profilePicture}
                                 onChange={handleChange}
                             />
                         </div>
-
                         <div className="form-group">
-                            <label htmlFor="coverPhoto">Cover photo URL</label>
+                            <label htmlFor="coverPhoto">Cover Photo URL</label>
                             <input
                                 id="coverPhoto"
-                                type="text"
                                 name="coverPhoto"
+                                type="text"
                                 value={form.coverPhoto}
                                 onChange={handleChange}
                             />
                         </div>
                     </div>
-
                     <button type="submit" className="profile-submit">
-                        Save changes
+                        Save Changes
                     </button>
                 </form>
             </div>
