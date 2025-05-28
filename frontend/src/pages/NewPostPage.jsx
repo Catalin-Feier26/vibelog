@@ -1,18 +1,41 @@
+// src/pages/NewPostPage.jsx
 import React, { useState } from 'react';
 import { useNavigate }     from 'react-router-dom';
-import { createPost }      from '../api/postService';
+import {
+    createPost,
+    uploadPostMedia
+} from '../api/postService';
 import './NewPostPage.css';
 
 export default function NewPostPage() {
-    const [title, setTitle]   = useState('');
-    const [body, setBody]     = useState('');
-    const [error, setError]   = useState('');
-    const navigate            = useNavigate();
+    const [title, setTitle]       = useState('');
+    const [body, setBody]         = useState('');
+    const [files, setFiles]       = useState([]);        // selected files
+    const [error, setError]       = useState('');
+    const navigate                = useNavigate();
+
+    const handleFileChange = e => {
+        // convert FileList to Array
+        setFiles(Array.from(e.target.files));
+    };
 
     const submit = async status => {
         setError('');
         try {
-            await createPost({ title, body, status });
+            // 1) create the post
+            const res = await createPost({ title, body, status });
+            const postId = res.data.id;
+
+            // 2) upload any selected files
+            await Promise.all(
+                files.map(file => {
+                    const form = new FormData();
+                    form.append('file', file);
+                    return uploadPostMedia(postId, file);
+                })
+            );
+
+            // 3) navigate back to feed (or to the new post’s page)
             navigate('/posts');
         } catch {
             setError('Could not save post');
@@ -21,7 +44,10 @@ export default function NewPostPage() {
 
     return (
         <div className="new-post-page animate-fadein">
-            <form className="new-post-form animate-fadeup" onSubmit={e => e.preventDefault()}>
+            <form
+                className="new-post-form animate-fadeup"
+                onSubmit={e => e.preventDefault()}
+            >
                 <h2>Create New Post</h2>
                 {error && <div className="form-error">{error}</div>}
 
@@ -48,6 +74,25 @@ export default function NewPostPage() {
                         rows={6}
                         required
                     />
+                </div>
+
+                {/* New: file input for media attachments */}
+                <div className="form-group">
+                    <label htmlFor="post-media">Attachments</label>
+                    <input
+                        id="post-media"
+                        type="file"
+                        accept="image/*,video/*"
+                        multiple
+                        onChange={handleFileChange}
+                    />
+                    {files.length > 0 && (
+                        <ul className="selected-files">
+                            {files.map((f, idx) => (
+                                <li key={idx}>{f.name}</li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
 
                 <div className="form-actions">

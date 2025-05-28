@@ -30,8 +30,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             .then(res => {
                 setLikesCount(res.data.totalLikes);
                 setLikedByMe(res.data.liked);
-            })
-            .catch(console.error);
+            }).catch(console.error);
 
         getCommentsForPost(post.id)
             .then(res => setCommentCount(res.data.length))
@@ -51,9 +50,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             const res = await toggleLike(post.id);
             setLikesCount(res.data.totalLikes);
             setLikedByMe(res.data.liked);
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     };
 
     const loadComments = async () => {
@@ -61,9 +58,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             const res = await getCommentsForPost(post.id);
             setComments(res.data);
             setCommentCount(res.data.length);
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     };
 
     const handleToggleComments = () => {
@@ -84,9 +79,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             }
             setReblogged(r => !r);
             onReblog?.();
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     };
 
     return (
@@ -94,10 +87,7 @@ export default function PostCard({ post, onDeleted, onReblog }) {
             {post.originalPostId && (
                 <div className="reblog-banner">
                     🔁 <strong>@{post.authorUsername}</strong> reblogged{' '}
-                    <Link
-                        to={`/posts/${post.originalPostId}`}
-                        className="reblog-link"
-                    >
+                    <Link to={`/posts/${post.originalPostId}`} className="reblog-link">
                         @{post.originalAuthorUsername}
                     </Link>
                 </div>
@@ -116,11 +106,28 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                 <p className="post-body">{post.body}</p>
             </Link>
 
+            {post.media && post.media.length > 0 && (
+                <div className="post-media-container">
+                    {post.media.map(m => (
+                        m.type === 'IMG'
+                            ? <img
+                                key={m.id}
+                                src={m.url}
+                                alt="attachment"
+                                className="post-media-image"
+                            />
+                            : <video
+                                key={m.id}
+                                src={m.url}
+                                controls
+                                className="post-media-video"
+                            />
+                    ))}
+                </div>
+            )}
+
             <footer className="post-footer">
-                <button
-                    onClick={handleLike}
-                    className={`btn-like ${likedByMe ? 'liked' : ''}`}
-                >
+                <button onClick={handleLike} className={`btn-like ${likedByMe ? 'liked' : ''}`}>
                     {likedByMe ? '💔' : '❤️'} {likesCount}
                 </button>
 
@@ -128,21 +135,13 @@ export default function PostCard({ post, onDeleted, onReblog }) {
                     💬 {commentCount}
                 </button>
 
-                <button
-                    onClick={handleReblog}
-                    className={`btn-reblog ${reblogged ? 'reblogged' : ''}`}
-                >
+                <button onClick={handleReblog} className={`btn-reblog ${reblogged ? 'reblogged' : ''}`}>
                     {reblogged ? '🔁' : '↪️'} {reblogCount}
                 </button>
 
-                <button onClick={handleDelete} className="btn-delete">
-                    🗑️
-                </button>
+                <button onClick={handleDelete} className="btn-delete">🗑️</button>
 
-                <button
-                    onClick={() => setReporting(r => !r)}
-                    className="btn-report"
-                >
+                <button onClick={() => setReporting(r => !r)} className="btn-report">
                     🚩 Report
                 </button>
             </footer>

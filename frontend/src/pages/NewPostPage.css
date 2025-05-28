@@ -148,3 +148,24 @@
         width: 100%;
     }
 }
+.new-post-form .form-group input[type="file"] {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,0.2);
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: border-color 0.3s, background 0.3s;
+}
+
+.new-post-form .selected-files {
+    margin-top: 0.5rem;
+    list-style: disc inside;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.new-post-form .selected-files li {
+    margin-left: 0.5rem;
+}

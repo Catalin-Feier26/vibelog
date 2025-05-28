@@ -22,3 +22,14 @@ export const updateMyProfile = async (data) => {
  */
 export const getUserProfile = (username) =>
     api.get(`/users/${username}`);
+
+export const uploadAvatar = file => {
+    const form = new FormData();
+    form.append('file', file);
+    return api
+        .post('/users/me/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+        .then(res => res.data);
+};
+
+export const deleteAvatar = () =>
+    api.delete('/users/me/avatar');

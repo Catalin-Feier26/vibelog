@@ -28,3 +28,20 @@ export const reblogPost = postId =>
 
 export const undoReblogPost = postId =>
     api.delete(`/posts/${postId}/reblog`);
+
+
+export const uploadPostMedia = (postId, file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api
+        .post(`/posts/${postId}/media`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        .then(res => res.data);
+};
+
+export const listPostMedia = postId =>
+    api.get(`/posts/${postId}/media`).then(res => res.data);
+
+export const deletePostMedia = mediaId =>
+    api.delete(`/posts/media/${mediaId}`);

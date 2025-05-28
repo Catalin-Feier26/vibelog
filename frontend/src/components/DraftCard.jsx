@@ -1,19 +1,15 @@
+// src/components/DraftCard.jsx
 import React, { useState } from 'react';
 import { updatePost, deletePost } from '../api/postService';
 import './DraftCard.css';
 
 export default function DraftCard({ post, onDeleted, onUpdated }) {
     const [isEditing, setEditing] = useState(false);
-    const [form, setForm]         = useState({
+    const [form, setForm] = useState({
         title: post.title,
-        body:  post.body
+        body: post.body
     });
-    const [error, setError]       = useState('');
-
-    const handleDelete = async () => {
-        await deletePost(post.id);
-        onDeleted?.(post.id);
-    };
+    const [error, setError] = useState('');
 
     const save = async status => {
         setError('');
@@ -24,6 +20,11 @@ export default function DraftCard({ post, onDeleted, onUpdated }) {
         } catch {
             setError('Failed to save');
         }
+    };
+
+    const handleDelete = async () => {
+        await deletePost(post.id);
+        onDeleted?.(post.id);
     };
 
     return (
@@ -57,6 +58,29 @@ export default function DraftCard({ post, onDeleted, onUpdated }) {
                         required
                     />
 
+                    {/* --- render existing attachments in edit mode --- */}
+                    {post.media && post.media.length > 0 && (
+                        <div className="draft-media-container">
+                            {post.media.map(m =>
+                                m.type === 'IMG' ? (
+                                    <img
+                                        key={m.id}
+                                        src={m.url}
+                                        alt="draft attachment"
+                                        className="draft-media-image"
+                                    />
+                                ) : (
+                                    <video
+                                        key={m.id}
+                                        src={m.url}
+                                        controls
+                                        className="draft-media-video"
+                                    />
+                                )
+                            )}
+                        </div>
+                    )}
+
                     <div className="draft-actions">
                         <button
                             type="button"
@@ -86,7 +110,31 @@ export default function DraftCard({ post, onDeleted, onUpdated }) {
                     <div className="draft-view">
                         <h2 className="draft-title">{post.title}</h2>
                         <p className="draft-body">{post.body}</p>
+
+                        {/* --- render attachments in view mode --- */}
+                        {post.media && post.media.length > 0 && (
+                            <div className="draft-media-container">
+                                {post.media.map(m =>
+                                    m.type === 'IMG' ? (
+                                        <img
+                                            key={m.id}
+                                            src={m.url}
+                                            alt="draft attachment"
+                                            className="draft-media-image"
+                                        />
+                                    ) : (
+                                        <video
+                                            key={m.id}
+                                            src={m.url}
+                                            controls
+                                            className="draft-media-video"
+                                        />
+                                    )
+                                )}
+                            </div>
+                        )}
                     </div>
+
                     <div className="draft-actions">
                         <button
                             className="btn-draft-edit"

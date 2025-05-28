@@ -1,4 +1,3 @@
-// SinglePost.jsx
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext }     from '../contexts/AuthContext';
@@ -48,8 +47,8 @@ export default function SinglePost() {
         try {
             const updated = await updatePost(postId, { ...form, status: post.status });
             setEditing(false);
-            setPost(updated);
-            setForm({ title: updated.title, body: updated.body });
+            setPost(updated.data ? updated.data : updated); // handle axios/res data
+            setForm({ title: updated.data ? updated.data.title : updated.title, body: updated.data ? updated.data.body : updated.body });
         } catch {
             setError('Could not save changes');
         }
@@ -121,10 +120,33 @@ export default function SinglePost() {
                     <div className="post-meta">
                         <span className="post-author">@{post.authorUsername}</span>
                         <span className="post-date">
-              {new Date(post.createdAt).toLocaleString()}
-            </span>
+                            {new Date(post.createdAt).toLocaleString()}
+                        </span>
                     </div>
                     <p className="post-body">{post.body}</p>
+
+                    {/* Render media attachments if present */}
+                    {post.media && post.media.length > 0 && (
+                        <div className="post-media-container">
+                            {post.media.map(m => (
+                                m.type === 'IMG' ? (
+                                    <img
+                                        key={m.id}
+                                        src={m.url}
+                                        alt="attachment"
+                                        className="post-media-image"
+                                    />
+                                ) : (
+                                    <video
+                                        key={m.id}
+                                        src={m.url}
+                                        controls
+                                        className="post-media-video"
+                                    />
+                                )
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
