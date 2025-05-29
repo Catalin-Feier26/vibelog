@@ -1,6 +1,7 @@
 package com.catalin.vibelog.service.implementations;
 
 import com.catalin.vibelog.dto.request.PostRequest;
+import com.catalin.vibelog.dto.response.MediaResponseDTO;
 import com.catalin.vibelog.dto.response.PostResponse;
 import com.catalin.vibelog.events.ReblogEvent;
 import com.catalin.vibelog.exception.PostNotFoundException;
@@ -9,19 +10,23 @@ import com.catalin.vibelog.exception.UserNotFoundException;
 import com.catalin.vibelog.model.Post;
 import com.catalin.vibelog.model.User;
 import com.catalin.vibelog.model.enums.PostStatus;
-import com.catalin.vibelog.repository.*;
+import com.catalin.vibelog.repository.CommentRepository;
+import com.catalin.vibelog.repository.LikeRepository;
+import com.catalin.vibelog.repository.PostRepository;
+import com.catalin.vibelog.repository.ReportRepository;
+import com.catalin.vibelog.repository.UserRepository;
+import com.catalin.vibelog.service.MediaService;
 import com.catalin.vibelog.service.PostService;
-import org.springframework.cglib.core.Local;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Default implementation of {@link PostService}, using Spring Data JPA for persistence.
@@ -34,43 +39,36 @@ import java.time.LocalDateTime;
 public class PostServiceImpl implements PostService {
 
     private final ApplicationEventPublisher publisher;
-    private final PostRepository    postRepo;
-    private final UserRepository    userRepo;
+    private final PostRepository postRepo;
+    private final UserRepository userRepo;
     private final CommentRepository commentRepo;
-    private final LikeRepository    likeRepo;
+    private final LikeRepository likeRepo;
     private final ReportRepository reportRepo;
+    private final MediaService mediaService;
 
-    /**
-     * Constructs a new {@code PostServiceImpl} with the required repositories.
-     *
-     * @param postRepo    the repository managing {@link Post} entities
-     * @param userRepo    the repository managing {@link User} entities
-     * @param commentRepo the repository managing {@link com.catalin.vibelog.model.Comment} entities
-     * @param likeRepo    the repository managing {@link com.catalin.vibelog.model.Like} entities
-     */
-    public PostServiceImpl(ReportRepository reportRepo,
-                           PostRepository postRepo,
-                           UserRepository userRepo,
-                           CommentRepository commentRepo,
-                           LikeRepository likeRepo,
-                           ApplicationEventPublisher publisher) {
-        this.reportRepo  = reportRepo;
-        this.postRepo    = postRepo;
-        this.userRepo    = userRepo;
+    public PostServiceImpl(
+            ReportRepository reportRepo,
+            PostRepository postRepo,
+            UserRepository userRepo,
+            CommentRepository commentRepo,
+            LikeRepository likeRepo,
+            ApplicationEventPublisher publisher,
+            MediaService mediaService
+    ) {
+        this.publisher = publisher;
+        this.postRepo = postRepo;
+        this.userRepo = userRepo;
         this.commentRepo = commentRepo;
-        this.likeRepo    = likeRepo;
-        this.publisher   = publisher;
+        this.likeRepo = likeRepo;
+        this.reportRepo = reportRepo;
+        this.mediaService = mediaService;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>Creates a new post in the given status, authored by the specified user.</p>
-     */
     @Override
     @Transactional
     public PostResponse createPost(PostRequest req, String authorUsername) {
         User author = userRepo.findByUsername(authorUsername)
-                .orElseThrow(() -> new PostNotFoundException(null)); // or a UserNotFoundException
+                .orElseThrow(() -> new PostNotFoundException(null));
         Post post = new Post();
         post.setTitle(req.title());
         post.setBody(req.body());
@@ -93,9 +91,6 @@ public class PostServiceImpl implements PostService {
         return toDto(saved);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Transactional(readOnly = true)
     public PostResponse getPostById(Long postId) {
@@ -104,9 +99,6 @@ public class PostServiceImpl implements PostService {
         return toDto(post);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> listPosts(PostStatus status, Pageable pageable) {
@@ -115,10 +107,6 @@ public class PostServiceImpl implements PostService {
                 .map(this::toDto);
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>Only the original author may update their post.</p>
-     */
     @Override
     @Transactional
     public PostResponse updatePost(Long postId, PostRequest req, String authorUsername) {
@@ -136,10 +124,6 @@ public class PostServiceImpl implements PostService {
         return toDto(updated);
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>Only the original author may delete their post.</p>
-     */
     @Override
     @Transactional
     public void deletePost(Long postId, String authorUsername) {
@@ -151,49 +135,43 @@ public class PostServiceImpl implements PostService {
         }
         postRepo.delete(post);
     }
+
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> listPostsByAuthor(String authorUsername, Pageable pageable) {
-        // enforce descending order by default if none supplied
-        Pageable pageWithDefaultSort =
-                pageable.getSort().isSorted()
-                        ? pageable
-                        : PageRequest.of(pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        Sort.by("createdAt").descending());
-
+        Pageable pageWithDefaultSort = pageable.getSort().isSorted()
+                ? pageable
+                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending());
         return postRepo
                 .findByAuthorUsername(authorUsername, pageWithDefaultSort)
                 .map(this::toDto);
     }
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     @Transactional(readOnly = true)
-    public Page<PostResponse> listPostsByAuthorAndStatus(String username,
-                                                         PostStatus status,
-                                                         Pageable pageable) {
-        // ensure user exists
+    public Page<PostResponse> listPostsByAuthorAndStatus(String username, PostStatus status, Pageable pageable) {
         userRepo.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
-
-        Page<Post> page = postRepo.findByAuthorUsernameAndStatus(username, status, pageable);
-        return page.map(this::toDto);
+        return postRepo.findByAuthorUsernameAndStatus(username, status, pageable)
+                .map(this::toDto);
     }
 
-    /**
-     * Maps a {@link Post} entity to a {@link PostResponse} DTO.
-     * <p>Also includes counts for likes and comments.</p>
-     *
-     * @param post the entity to convert
-     * @return the populated response DTO
-     */
     private PostResponse toDto(Post post) {
-        int likeCount    = likeRepo.countByIdPostId(post.getId());
-        int commentCount = commentRepo
-                .findAllByPostId(post.getId(), Sort.unsorted())
-                .size();
+        int likeCount = likeRepo.countByIdPostId(post.getId());
+        int commentCount = commentRepo.findAllByPostId(post.getId(), Sort.unsorted()).size();
+
+        // null-safe original post info
+        Long originalPostId = post.getOriginalPost() == null
+                ? null
+                : post.getOriginalPost().getId();
+        String originalAuthor = post.getOriginalPost() == null
+                ? null
+                : post.getOriginalPost().getAuthor().getUsername();
+
+        // media attachments
+        List<MediaResponseDTO> mediaDtos = mediaService.listForPost(post.getId()).stream()
+                .map(m -> new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name()))
+                .toList();
 
         return new PostResponse(
                 post.getId(),
@@ -204,27 +182,24 @@ public class PostServiceImpl implements PostService {
                 post.getAuthor().getUsername(),
                 likeCount,
                 commentCount,
-                post.getOriginalPost() == null ? null : post.getOriginalPost().getId(),
-                post.getOriginalPost() == null ? null : post.getOriginalPost().getAuthor().getUsername()
-
+                originalPostId,
+                originalAuthor,
+                mediaDtos
         );
     }
+
     @Override
     @Transactional
     public void undoReblog(String username, Long originalPostId) {
-        // find the reblog-post authored by user
-        Post reblog = postRepo
-                .findByAuthorUsernameAndOriginalPostId(username, originalPostId)
-                .orElseThrow(() -> new PostNotFoundException(
-                        originalPostId));
+        Post reblog = postRepo.findByAuthorUsernameAndOriginalPostId(username, originalPostId)
+                .orElseThrow(() -> new PostNotFoundException(originalPostId));
         postRepo.delete(reblog);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isReblogged(String username, Long originalPostId) {
-        return postRepo
-                .existsByAuthorUsernameAndOriginalPostId(username, originalPostId);
+        return postRepo.existsByAuthorUsernameAndOriginalPostId(username, originalPostId);
     }
 
     @Override
@@ -232,18 +207,13 @@ public class PostServiceImpl implements PostService {
     public int countReblogs(Long originalPostId) {
         return postRepo.countByOriginalPostId(originalPostId);
     }
+
     @Override
     @Transactional
     public void deletePostAsModerator(Long postId) {
-        // 1) ensure it exists
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(postId));
-
-        // 2) drop any reports pointing at it
         reportRepo.deleteAllByPostId(postId);
-
-        // 3) now safely delete the post
         postRepo.delete(post);
     }
-
 }

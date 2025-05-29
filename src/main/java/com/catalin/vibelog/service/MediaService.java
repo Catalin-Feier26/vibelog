@@ -1,24 +1,20 @@
-//package com.catalin.vibelog.service;
-//
-//import com.catalin.vibelog.model.Media;
-//import com.catalin.vibelog.model.enums.MediaType;
-//
-//import java.util.List;
-//
-//public interface MediaService {
-//    Media uploadMedia(Media media);
-//
-//    Media getMediaById(Long id);
-//    List<Media> getAllMedia();
-//
-//    List<Media> getMediaByType(MediaType type);
-//
-//    List<Media> getMediaByFormat(String format);
-//
-//    Media getMediaByUrl(String url);
-//
-//    void deleteMedia(Long id);
-//
-//    List<Media> getMediaForPost(Long postId);
-//
-//}
+package com.catalin.vibelog.service;
+
+import com.catalin.vibelog.model.Media;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+public interface MediaService {
+    /** Uploads a file and attaches it to the given post. */
+    Media uploadToPost(Long postId, MultipartFile file);
+
+    /** Deletes a single media item (and its file). */
+    void deleteMedia(Long mediaId);
+
+    /** Deletes all media attached to a post. */
+    void deleteAllForPost(Long postId);
+
+    /** Lists all media items for a post. */
+    List<Media> listForPost(Long postId);
+}

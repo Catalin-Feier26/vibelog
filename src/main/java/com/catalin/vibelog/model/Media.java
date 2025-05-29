@@ -43,8 +43,9 @@ public class Media {
      * All posts that reference this media.
      * Mapped by the {@code mediaList} field in {@link Post}.
      */
-    @ManyToMany(mappedBy = "mediaList")
-    private List<Post> posts = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     /**
      * Default constructor required by JPA.

@@ -85,7 +85,7 @@
 }
 
 .btn-like {
-    color: var(--color-primary);
+    color: #F4F0FF;
 }
 .btn-like:hover {
     background: rgba(161,137,231,0.1);

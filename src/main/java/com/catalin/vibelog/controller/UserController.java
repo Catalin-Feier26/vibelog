@@ -3,11 +3,15 @@ package com.catalin.vibelog.controller;
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;
 import com.catalin.vibelog.dto.response.ProfileResponse;
 import com.catalin.vibelog.dto.response.ProfileUpdateWithTokenResponse;
+
 import com.catalin.vibelog.security.JwtUtil;
+import com.catalin.vibelog.service.StorageService;
 import com.catalin.vibelog.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * REST controller for endpoints related to the authenticated user's profile.
@@ -19,13 +23,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
-    private final JwtUtil jwtUtil;
+    private final UserService   userService;
+    private final StorageService storageService;
 
-
-    public UserController(UserService userService, JwtUtil jwtUtil) {
-        this.userService = userService;
-        this.jwtUtil=jwtUtil;
+    public UserController(UserService userService,
+                          StorageService storageService) {
+        this.userService    = userService;
+        this.storageService = storageService;
     }
 
     /**
@@ -67,5 +71,42 @@ public class UserController {
     ) {
         String username = auth.getName();
         return userService.updateProfileAndGetTokenByUsername(username, req);
+    }
+
+    /**
+     * POST /api/users/me/avatar : upload a new profile picture
+     */
+    @PostMapping("/me/avatar")
+    public ProfileResponse uploadAvatar(
+            Authentication auth,
+            @RequestParam("file") MultipartFile file
+    ) {
+        String username = auth.getName();
+        // 1) store the file
+        String url = storageService.store(file);
+        // 2) update just the profilePicture field
+        return userService.updateProfileByUsername(
+                username,
+                new ProfileUpdateRequest(null, null, null, url)
+        );
+    }
+
+    /**
+     * DELETE /api/users/me/avatar : remove profile picture
+     */
+    @DeleteMapping("/me/avatar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAvatar(Authentication auth) {
+        String username = auth.getName();
+        // fetch current URL so we can clean up the file
+        ProfileResponse before = userService.getProfileByUsername(username);
+        if (before.profilePicture() != null) {
+            storageService.delete(before.profilePicture());
+        }
+        // clear the field on the entity
+        userService.updateProfileByUsername(
+                username,
+                new ProfileUpdateRequest(null, null, null, null)
+        );
     }
 }

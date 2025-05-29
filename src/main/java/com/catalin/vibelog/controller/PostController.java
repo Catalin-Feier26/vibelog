@@ -1,8 +1,12 @@
 package com.catalin.vibelog.controller;
 
 import com.catalin.vibelog.dto.request.PostRequest;
+import com.catalin.vibelog.dto.response.MediaResponseDTO;
 import com.catalin.vibelog.dto.response.PostResponse;
+import com.catalin.vibelog.model.Media;
 import com.catalin.vibelog.model.enums.PostStatus;
+
+import com.catalin.vibelog.service.MediaService;
 import com.catalin.vibelog.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -12,7 +16,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,10 +32,13 @@ import java.util.Map;
 @RequestMapping("/api/posts")
 public class PostController {
 
-    private final PostService postService;
+    private final PostService  postService;
+    private final MediaService mediaService;
 
-    public PostController(PostService postService) {
-        this.postService = postService;
+    public PostController(PostService postService,
+                          MediaService mediaService) {
+        this.postService  = postService;
+        this.mediaService = mediaService;
     }
 
     /**
@@ -230,5 +239,37 @@ public class PostController {
     public Map<String, Integer> reblogCount(@PathVariable Long postId) {
         int count = postService.countReblogs(postId);
         return Map.of("count", count);
+    }
+
+    /**
+     * POST /api/posts/{postId}/media : attach a file to a post
+     */
+    @PostMapping("/{postId}/media")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MediaResponseDTO uploadMedia(
+            @PathVariable Long postId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        Media m = mediaService.uploadToPost(postId, file);
+        return new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name());
+    }
+
+    /**
+     * GET /api/posts/{postId}/media : list all attachments for a post
+     */
+    @GetMapping("/{postId}/media")
+    public List<MediaResponseDTO> listMedia(@PathVariable Long postId) {
+        return mediaService.listForPost(postId).stream()
+                .map(m -> new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name()))
+                .toList();
+    }
+
+    /**
+     * DELETE /api/posts/media/{mediaId} : remove a single attachment
+     */
+    @DeleteMapping("/media/{mediaId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMedia(@PathVariable Long mediaId) {
+        mediaService.deleteMedia(mediaId);
     }
 }

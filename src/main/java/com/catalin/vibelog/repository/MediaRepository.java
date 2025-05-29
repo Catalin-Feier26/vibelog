@@ -1,15 +1,27 @@
-//package com.catalin.vibelog.repository;
-//
-//import org.springframework.data.jpa.repository.JpaRepository;
-//import java.util.List;
-//import com.catalin.vibelog.model.Media;
-//import com.catalin.vibelog.model.enums.MediaType;
-//import org.springframework.stereotype.Repository;
-//
-//@Repository
-//public interface MediaRepository extends JpaRepository<Media,Long>{
-//    List<Media> findMediaByFormat(String format);
-//    List<Media> findMediaBySize(Long size);
-//    List<Media> findMediaByType(MediaType type);
-//    Media findMediaByUrl(String url);
-//}
+package com.catalin.vibelog.repository;
+
+import com.catalin.vibelog.model.Media;
+import com.catalin.vibelog.model.enums.MediaType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface MediaRepository extends JpaRepository<Media, Long> {
+
+    /**
+     * Find all media records belonging to a given post.
+     */
+    List<Media> findByPostId(Long postId);
+
+    /**
+     * Find all media of a certain type (e.g. all videos or all images).
+     */
+    List<Media> findByType(MediaType type);
+
+    /**
+     * (Optional) Delete all media attached to a given post in one shot.
+     */
+    void deleteByPostId(Long postId);
+}

@@ -51,14 +51,12 @@ public class Post {
     private User author;
 
     /** Media items attached to this post. */
-    @ManyToMany
-    @JoinTable(
-            name = "posts_media",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id")
+    @OneToMany(
+            mappedBy      = "post",
+            cascade       = CascadeType.ALL,
+            orphanRemoval = true
     )
     private List<Media> mediaList = new ArrayList<>();
-
     /** Reference to the original post if this is a reblog. */
     @ManyToOne
     @JoinColumn(name = "original_post_id")

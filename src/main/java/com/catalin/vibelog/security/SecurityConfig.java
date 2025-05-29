@@ -57,6 +57,7 @@ public class SecurityConfig {
                 // endpoint authorization rules
                 .authorizeHttpRequests(auth -> auth
                         // allow unauthenticated access to auth endpoints
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         // allow Swagger/OpenAPI UI and docs
                         .requestMatchers(

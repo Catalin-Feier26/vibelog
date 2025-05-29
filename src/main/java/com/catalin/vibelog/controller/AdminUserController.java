@@ -1,5 +1,3 @@
-// src/main/java/com/catalin/vibelog/controller/AdminUserController.java
-
 package com.catalin.vibelog.controller;
 
 import com.catalin.vibelog.dto.request.ProfileUpdateRequest;

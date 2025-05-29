@@ -1,6 +1,7 @@
 // src/main/java/com/catalin/vibelog/service/implementations/SearchServiceImpl.java
 package com.catalin.vibelog.service.implementations;
 
+import com.catalin.vibelog.dto.response.MediaResponseDTO;
 import com.catalin.vibelog.dto.response.UserResponseDTO;
 import com.catalin.vibelog.dto.response.PostResponse;
 import com.catalin.vibelog.model.Post;
@@ -9,6 +10,7 @@ import com.catalin.vibelog.repository.PostRepository;
 import com.catalin.vibelog.repository.UserRepository;
 import com.catalin.vibelog.repository.LikeRepository;
 import com.catalin.vibelog.repository.CommentRepository;
+import com.catalin.vibelog.service.MediaService;
 import com.catalin.vibelog.service.SearchService;
 import com.catalin.vibelog.model.enums.PostStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +26,20 @@ public class SearchServiceImpl implements SearchService {
     private final PostRepository    postRepo;
     private final LikeRepository    likeRepo;
     private final CommentRepository commentRepo;
+    private final MediaService mediaService;
 
     @Autowired
     public SearchServiceImpl(
             UserRepository userRepo,
             PostRepository postRepo,
             LikeRepository likeRepo,
-            CommentRepository commentRepo
-    ) {
+            CommentRepository commentRepo,
+            MediaService mediaServiceImpl) {
         this.userRepo    = userRepo;
         this.postRepo    = postRepo;
         this.likeRepo    = likeRepo;
         this.commentRepo = commentRepo;
+        this.mediaService = mediaServiceImpl;
     }
 
     @Override
@@ -88,7 +92,10 @@ public class SearchServiceImpl implements SearchService {
                 likeCount,
                 commentCount,
                 originalId,
-                originalAuthor
+                originalAuthor,
+                mediaService.listForPost(post.getId()).stream()
+                        .map(m -> new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name()))
+                        .toList()
         );
     }
 }
