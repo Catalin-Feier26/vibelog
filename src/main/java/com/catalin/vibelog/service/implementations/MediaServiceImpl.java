@@ -14,6 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+/**
+ * Default implementation of {@link MediaService}, handling upload, retrieval,
+ * and deletion of media attachments for posts. Integrates file storage via {@link StorageService}
+ * and ensures database and storage consistency within transactions.
+ */
 @Service
 @Transactional
 public class MediaServiceImpl implements MediaService {
@@ -22,6 +27,13 @@ public class MediaServiceImpl implements MediaService {
     private final PostRepository postRepo;
     private final StorageService storageService;
 
+    /**
+     * Constructs the MediaService implementation with required dependencies.
+     *
+     * @param mediaRepo      repository for persisting Media entities
+     * @param postRepo       repository for retrieving related Post entities
+     * @param storageService service for storing and deleting underlying files
+     */
     public MediaServiceImpl(MediaRepository mediaRepo,
                             PostRepository postRepo,
                             StorageService storageService) {
@@ -30,6 +42,17 @@ public class MediaServiceImpl implements MediaService {
         this.storageService = storageService;
     }
 
+    /**
+     * Upload a file and attach it to the specified post.
+     * The file is stored using {@code storageService} and a {@link Media} entity is saved.
+     * In case of persistence failure, the stored file is cleaned up.
+     *
+     * @param postId the ID of the post to attach the media to
+     * @param file   the multipart file to upload
+     * @return the persisted {@link Media} entity
+     * @throws EntityNotFoundException if no post exists with the given ID
+     * @throws RuntimeException        if saving the Media entity fails (file cleanup attempted)
+     */
     @Override
     public Media uploadToPost(Long postId, MultipartFile file) {
         // 1) Fetch the post
@@ -59,6 +82,12 @@ public class MediaServiceImpl implements MediaService {
         }
     }
 
+    /**
+     * Delete a single media item by its ID, removing both the database record and stored file.
+     *
+     * @param mediaId the ID of the media to delete
+     * @throws EntityNotFoundException if no Media exists with the given ID
+     */
     @Override
     public void deleteMedia(Long mediaId) {
         Media media = mediaRepo.findById(mediaId)
@@ -67,6 +96,11 @@ public class MediaServiceImpl implements MediaService {
         storageService.delete(media.getUrl());
     }
 
+    /**
+     * Delete all media items attached to the specified post, including associated files.
+     *
+     * @param postId the ID of the post whose media attachments to remove
+     */
     @Override
     public void deleteAllForPost(Long postId) {
         List<Media> all = mediaRepo.findByPostId(postId);
@@ -74,13 +108,23 @@ public class MediaServiceImpl implements MediaService {
         all.forEach(m -> storageService.delete(m.getUrl()));
     }
 
+    /**
+     * List all media items attached to the specified post.
+     *
+     * @param postId the ID of the post whose media to list
+     * @return a list of {@link Media} entities for the post
+     */
     @Override
     public List<Media> listForPost(Long postId) {
         return mediaRepo.findByPostId(postId);
     }
 
     /**
-     * Extracts the file extension (without the dot), or returns empty string if none.
+     * Extracts the file extension (without the dot) from a filename,
+     * or returns an empty string if none.
+     *
+     * @param filename the original filename
+     * @return the lowercase extension without the leading dot, or empty string
      */
     private String getExtension(String filename) {
         if (filename == null) {
@@ -94,7 +138,11 @@ public class MediaServiceImpl implements MediaService {
     }
 
     /**
-     * Determines IMG vs VIDEO based on extension first, then MIME type as fallback.
+     * Determine {@link MediaType} based on file extension or MIME type fallback.
+     * Supports common image and video extensions.
+     *
+     * @param file the multipart file to inspect
+     * @return {@code IMG} for images, {@code VIDEO} for videos
      */
     private MediaType detectType(MultipartFile file) {
         String ext = getExtension(file.getOriginalFilename());

@@ -25,8 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * Default {@link ReportService} implementation,
- * handling persistence and business rules for reports.
+ * Default implementation of {@link ReportService}, handling creation, retrieval,
+ * and status updates for reports against posts or comments.
+ * Publishes a {@link ReportResolvedEvent} when a report is resolved.
  */
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -37,6 +38,15 @@ public class ReportServiceImpl implements ReportService {
     private final PostRepository postRepo;
     private final CommentRepository commentRepo;
 
+    /**
+     * Constructs the service with required dependencies.
+     *
+     * @param publisher    event publisher for firing domain events
+     * @param reportRepo   repository for report persistence
+     * @param userService  service for validating and retrieving users
+     * @param postRepo     repository for post lookups
+     * @param commentRepo  repository for comment lookups
+     */
     @Autowired
     public ReportServiceImpl(
             ApplicationEventPublisher publisher,
@@ -45,13 +55,25 @@ public class ReportServiceImpl implements ReportService {
             PostRepository postRepo,
             CommentRepository commentRepo
     ) {
-        this.publisher=publisher;
-        this.reportRepo    = reportRepo;
-        this.userService   = userService;
-        this.postRepo      = postRepo;
-        this.commentRepo   = commentRepo;
+        this.publisher = publisher;
+        this.reportRepo = reportRepo;
+        this.userService = userService;
+        this.postRepo = postRepo;
+        this.commentRepo = commentRepo;
     }
 
+    /**
+     * Submit a new report against either a post or a comment.
+     * Exactly one of {@code postId} or {@code commentId} must be non-null.
+     *
+     * @param reporterUsername the username of the reporting user
+     * @param req              details of the report, including target and reason
+     * @return a {@link ReportResponseDTO} representing the persisted report
+     * @throws IllegalArgumentException   if both or neither of postId/commentId are provided
+     * @throws UserNotFoundException      if the reporting user does not exist
+     * @throws PostNotFoundException      if the specified post does not exist
+     * @throws CommentNotFoundException   if the specified comment does not exist
+     */
     @Override
     public ReportResponseDTO submitReport(String reporterUsername, ReportRequestDTO req) {
         // lookup reporter
@@ -84,12 +106,27 @@ public class ReportServiceImpl implements ReportService {
         return toDto(saved);
     }
 
+    /**
+     * List reports filtered by their status.
+     *
+     * @param status the status of reports to retrieve
+     * @param page   pagination and sorting information
+     * @return a {@link Page} of {@link ReportResponseDTO} matching the status
+     */
     @Override
     public Page<ReportResponseDTO> listReportsByStatus(ReportStatus status, Pageable page) {
         return reportRepo.findByStatus(status, page)
                 .map(this::toDto);
     }
 
+    /**
+     * List reports submitted by a specific user.
+     *
+     * @param reporterUsername the username of the reporting user
+     * @param page             pagination and sorting information
+     * @return a {@link Page} of {@link ReportResponseDTO} for that user
+     * @throws UserNotFoundException if the reporting user does not exist
+     */
     @Override
     public Page<ReportResponseDTO> listReportsByReporter(String reporterUsername, Pageable page) {
         // validate reporter exists
@@ -98,6 +135,14 @@ public class ReportServiceImpl implements ReportService {
                 .map(this::toDto);
     }
 
+    /**
+     * Update the status of an existing report and publish a resolved event if applicable.
+     *
+     * @param reportId the ID of the report to update
+     * @param upd      DTO containing the new status
+     * @return a {@link ReportResponseDTO} reflecting the updated report
+     * @throws ReportNotFoundException if no report exists with the given ID
+     */
     @Override
     public ReportResponseDTO updateReportStatus(Long reportId, ReportStatusUpdateDTO upd) {
         Report rep = reportRepo.findById(reportId)
@@ -105,7 +150,7 @@ public class ReportServiceImpl implements ReportService {
 
         rep.setStatus(upd.status());
         Report saved = reportRepo.save(rep);
-        if(saved.getStatus().equals(ReportStatus.RESOLVED)) {
+        if (saved.getStatus().equals(ReportStatus.RESOLVED)) {
             publisher.publishEvent(new ReportResolvedEvent(
                     this,
                     saved.getId(),
@@ -118,6 +163,12 @@ public class ReportServiceImpl implements ReportService {
         return toDto(saved);
     }
 
+    /**
+     * Map a {@link Report} entity to a {@link ReportResponseDTO}.
+     *
+     * @param r the report entity to convert
+     * @return the corresponding response DTO
+     */
     private ReportResponseDTO toDto(Report r) {
         return new ReportResponseDTO(
                 r.getId(),

@@ -7,21 +7,35 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Spring Data repository for managing {@link Media} entities.
+ * <p>
+ * Provides methods to query and delete media attachments by post or type.
+ * </p>
+ */
 @Repository
 public interface MediaRepository extends JpaRepository<Media, Long> {
 
     /**
-     * Find all media records belonging to a given post.
+     * Retrieve all media attachments for the specified post.
+     *
+     * @param postId the ID of the post whose media to retrieve
+     * @return a {@link List} of {@link Media} entities associated with the post
      */
     List<Media> findByPostId(Long postId);
 
     /**
-     * Find all media of a certain type (e.g. all videos or all images).
+     * Retrieve all media records of the given {@link MediaType}.
+     *
+     * @param type the {@link MediaType} to filter by (e.g., IMG or VIDEO)
+     * @return a {@link List} of {@link Media} entities matching the type
      */
     List<Media> findByType(MediaType type);
 
     /**
-     * (Optional) Delete all media attached to a given post in one shot.
+     * Delete all media attachments associated with the specified post.
+     *
+     * @param postId the ID of the post whose media should be removed
      */
     void deleteByPostId(Long postId);
 }

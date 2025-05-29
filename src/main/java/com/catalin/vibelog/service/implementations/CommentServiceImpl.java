@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Default implementation of {@link CommentService}, using Spring Data JPA.
- * <p>
- * Read-only methods are marked {@code readOnly=true}. Mutating methods
- * are wrapped in transactions for atomicity and rollback on errors.
- * </p>
+ * Default implementation of {@link CommentService}, handling creation, retrieval,
+ * updating, and deletion of comments on posts.
+ * Read-only methods are marked {@code readOnly=true}, and mutating methods
+ * run within transactions to ensure atomicity and rollback.
  */
 @Service
+@Transactional
 public class CommentServiceImpl implements CommentService {
 
     private final ApplicationEventPublisher publisher;
@@ -39,23 +39,39 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository    postRepo;
     private final UserRepository    userRepo;
 
+    /**
+     * Constructs the comment service with required repositories and event publisher.
+     *
+     * @param reportRepo   repository for cleaning up reports on moderation actions
+     * @param publisher    event publisher for firing comment events
+     * @param commentRepo  repository for comment persistence and queries
+     * @param postRepo     repository for validating posts
+     * @param userRepo     repository for validating users
+     */
     public CommentServiceImpl(ReportRepository  reportRepo,
                               ApplicationEventPublisher publisher,
                               CommentRepository commentRepo,
                               PostRepository postRepo,
                               UserRepository userRepo) {
-        this.reportRepo=reportRepo;
-        this.publisher=publisher;
+        this.reportRepo = reportRepo;
+        this.publisher = publisher;
         this.commentRepo = commentRepo;
-        this.postRepo    = postRepo;
-        this.userRepo    = userRepo;
+        this.postRepo = postRepo;
+        this.userRepo = userRepo;
     }
 
     /**
-     * {@inheritDoc}
+     * Add a new comment under the specified post authored by the given user.
+     * Publishes a {@link CommentEvent} after successful creation.
+     *
+     * @param postId         the ID of the post to comment on
+     * @param req            the {@link CommentRequest} containing comment content
+     * @param authorUsername the username of the commenter (authenticated user)
+     * @return the created {@link CommentResponse}
+     * @throws PostNotFoundException        if no post exists with the given ID
+     * @throws IllegalStateException        if the author user cannot be found
      */
     @Override
-    @Transactional
     public CommentResponse addComment(Long postId, CommentRequest req, String authorUsername) {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(postId));
@@ -80,12 +96,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * {@inheritDoc}
+     * List all comments for the given post, ordered by creation time ascending.
+     *
+     * @param postId the ID of the post whose comments to retrieve
+     * @return a list of {@link CommentResponse} DTOs
+     * @throws PostNotFoundException if no post exists with the given ID
      */
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponse> listComments(Long postId) {
-        // ensure post exists
         if (!postRepo.existsById(postId)) {
             throw new PostNotFoundException(postId);
         }
@@ -97,10 +116,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * {@inheritDoc}
+     * Update an existing comment's content. Only the original author may update.
+     *
+     * @param commentId      the ID of the comment to update
+     * @param req            the {@link CommentRequest} containing new content
+     * @param authorUsername the username of the user attempting the update
+     * @return the updated {@link CommentResponse}
+     * @throws CommentNotFoundException      if no comment exists with the given ID
+     * @throws UnauthorizedActionException   if the user is not the comment's author
      */
     @Override
-    @Transactional
     public CommentResponse updateComment(Long commentId, CommentRequest req, String authorUsername) {
         Comment comment = commentRepo.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -115,10 +140,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * {@inheritDoc}
+     * Delete a comment. Only the original author may perform this action.
+     *
+     * @param commentId      the ID of the comment to delete
+     * @param authorUsername the username of the user attempting deletion
+     * @throws CommentNotFoundException      if no comment exists with the given ID
+     * @throws UnauthorizedActionException   if the user is not the comment's author
      */
     @Override
-    @Transactional
     public void deleteComment(Long commentId, String authorUsername) {
         Comment comment = commentRepo.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -128,20 +157,26 @@ public class CommentServiceImpl implements CommentService {
         }
         commentRepo.delete(comment);
     }
+
+    /**
+     * Delete a comment as a moderator, deleting associated reports first.
+     *
+     * @param commentId the ID of the comment to delete
+     * @throws CommentNotFoundException if no comment exists with the given ID
+     */
     @Override
-    @Transactional
     public void deleteCommentAsModerator(Long commentId) {
-        Comment c = commentRepo.findById(commentId)
+        Comment comment = commentRepo.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
         reportRepo.deleteAllByCommentId(commentId);
-        commentRepo.delete(c);
+        commentRepo.delete(comment);
     }
 
     /**
-     * Map a {@link Comment} entity to its {@link CommentResponse} DTO.
+     * Map a {@link Comment} entity to a {@link CommentResponse} DTO.
      *
-     * @param c the comment entity
-     * @return the DTO with id, content, authorUsername, and creation time
+     * @param c the comment entity to convert
+     * @return the populated {@link CommentResponse}
      */
     private CommentResponse toDto(Comment c) {
         return new CommentResponse(

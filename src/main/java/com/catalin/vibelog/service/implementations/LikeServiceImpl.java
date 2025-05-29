@@ -18,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * Default implementation of {@link LikeService}, using Spring Data JPA.
+ * Default implementation of {@link LikeService}, handling toggling and querying of likes on posts.
  * <p>
- * All methods are transactional to ensure consistency of like toggling.
+ * All methods are transactional to ensure consistency when creating or removing likes.
+ * Publishes a {@link LikeEvent} when a new like is created by someone other than the post's author.
  * </p>
  */
 @Service
@@ -31,6 +32,14 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepo;
     private final UserRepository userRepo;
 
+    /**
+     * Constructs the LikeService implementation with necessary repositories and event publisher.
+     *
+     * @param likeRepo  repository for persisting and querying Like entities
+     * @param postRepo  repository for retrieving Post entities
+     * @param userRepo  repository for retrieving User entities
+     * @param publisher event publisher for firing LikeEvent notifications
+     */
     public LikeServiceImpl(LikeRepository likeRepo,
                            PostRepository postRepo,
                            UserRepository userRepo,
@@ -42,7 +51,15 @@ public class LikeServiceImpl implements LikeService {
     }
 
     /**
-     * {@inheritDoc}
+     * Toggle a like for the specified post by the given user.
+     * If a like already exists, it will be removed; otherwise, a new like is created.
+     * Publishes a {@link LikeEvent} when a new like is created and the liker is not the post's author.
+     *
+     * @param postId   the ID of the post to like or unlike
+     * @param username the username of the acting user
+     * @return a {@link LikeResponse} containing post ID, new liked status, and total like count
+     * @throws PostNotFoundException     if no post exists with the given ID
+     * @throws IllegalStateException     if the authenticated user cannot be found
      */
     @Override
     @Transactional
@@ -56,9 +73,11 @@ public class LikeServiceImpl implements LikeService {
         LikeId id = new LikeId(user.getId(), post.getId());
         boolean liked;
         if (likeRepo.existsById(id)) {
+            // Remove existing like
             likeRepo.deleteById(id);
             liked = false;
         } else {
+            // Create new like
             Like like = new Like();
             like.setId(id);
             like.setUser(user);
@@ -66,7 +85,8 @@ public class LikeServiceImpl implements LikeService {
             like.setLikedAt(LocalDateTime.now());
             likeRepo.save(like);
             liked = true;
-            if(liked && !username.equals(post.getAuthor().getUsername())) {
+            // Publish event if liker is not the author
+            if (liked && !username.equals(post.getAuthor().getUsername())) {
                 publisher.publishEvent(new LikeEvent(
                         this,
                         postId,
@@ -79,8 +99,12 @@ public class LikeServiceImpl implements LikeService {
         int total = likeRepo.countByIdPostId(postId);
         return new LikeResponse(postId, liked, total);
     }
+
     /**
-     * {@inheritDoc}
+     * Count the total number of likes for a given post.
+     *
+     * @param postId the ID of the post to count likes for
+     * @return the number of likes
      */
     @Override
     @Transactional(readOnly = true)
@@ -89,13 +113,19 @@ public class LikeServiceImpl implements LikeService {
     }
 
     /**
-     * {@inheritDoc}
+     * Check whether the specified user has liked a given post.
+     *
+     * @param postId   the ID of the post to check
+     * @param username the username of the user to check for
+     * @return {@code true} if the user has liked the post, {@code false} otherwise
+     * @throws IllegalStateException if the authenticated user cannot be found
      */
     @Override
     @Transactional(readOnly = true)
     public boolean isLiked(Long postId, String username) {
         User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + username));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Authenticated user not found: " + username));
         LikeId id = new LikeId(user.getId(), postId);
         return likeRepo.existsById(id);
     }

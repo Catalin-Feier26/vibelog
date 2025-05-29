@@ -13,20 +13,29 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.List;
 
 /**
- * Configures JWT-based security for the application, including CORS,
- * stateless session management, and endpoint authorization.
+ * Configures application security using JWT tokens within a stateless
+ * Spring Security filter chain. Sets up CORS, CSRF disabling,
+ * session management, endpoint authorization rules, and password encoding.
  */
 @Configuration
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
 
+    /**
+     * Constructs SecurityConfig with the JWT utility for token operations.
+     *
+     * @param jwtUtil utility for generating and validating JWT tokens
+     */
     public SecurityConfig(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
     /**
-     * Registers the JWT authentication filter into the Spring Security filter chain.
+     * Creates a JWT authentication filter bean to validate tokens
+     * on incoming requests before the username/password filter.
+     *
+     * @return a configured {@link JwtAuthenticationFilter}
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -34,9 +43,19 @@ public class SecurityConfig {
     }
 
     /**
-     * Defines the security filter chain: CORS setup, disabling CSRF,
-     * stateless sessions, open endpoints for auth and Swagger, and
-     * JWT protection for all other routes.
+     * Defines the main security filter chain for HTTP requests.
+     * Configures CORS for the React frontend, disables CSRF,
+     * enforces stateless sessions, and sets authorization rules:
+     * <ul>
+     *   <li>Public access to uploads and auth endpoints</li>
+     *   <li>Public access to Swagger/OpenAPI documentation</li>
+     *   <li>JWT authentication required for all other routes</li>
+     * </ul>
+     * The JWT filter is inserted before the standard authentication filter.
+     *
+     * @param http the {@link HttpSecurity} builder
+     * @return the configured {@link SecurityFilterChain}
+     * @throws Exception if an error occurs during configuration
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -50,13 +69,13 @@ public class SecurityConfig {
                     config.setAllowCredentials(true);
                     return config;
                 }))
-                // no CSRF since we're using tokens
+                // disable CSRF since tokens are used
                 .csrf(csrf -> csrf.disable())
-                // stateless session management
+                // enforce stateless session; no HTTP sessions
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // endpoint authorization rules
+                // authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // allow unauthenticated access to auth endpoints
+                        // allow unauthenticated access to uploads and auth endpoints
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         // allow Swagger/OpenAPI UI and docs
@@ -67,18 +86,23 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // all other requests require authentication
+                        // require authentication for any other request
                         .anyRequest().authenticated()
                 )
-                // add our JWT filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class);
+                // add JWT filter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(
+                        jwtAuthenticationFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
 
     /**
-     * Password encoder bean for hashing and verifying user passwords.
+     * Provides a password encoder bean using BCrypt hashing algorithm
+     * for secure password storage and verification.
+     *
+     * @return a {@link PasswordEncoder} instance for password hashing
      */
     @Bean
     public PasswordEncoder passwordEncoder() {

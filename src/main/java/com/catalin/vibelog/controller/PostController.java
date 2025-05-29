@@ -3,9 +3,6 @@ package com.catalin.vibelog.controller;
 import com.catalin.vibelog.dto.request.PostRequest;
 import com.catalin.vibelog.dto.response.MediaResponseDTO;
 import com.catalin.vibelog.dto.response.PostResponse;
-import com.catalin.vibelog.model.Media;
-import com.catalin.vibelog.model.enums.PostStatus;
-
 import com.catalin.vibelog.service.MediaService;
 import com.catalin.vibelog.service.PostService;
 import jakarta.validation.Valid;
@@ -22,31 +19,38 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * REST controller for managing Posts.
+ * REST controller for managing posts.
  * <p>
- * Exposes endpoints to create, read, update, delete, and list posts.
- * All mutating operations require an authenticated user.
+ * Exposes endpoints to create, retrieve, update, delete, list, and manage media
+ * and reblogs for posts. All mutating operations require the user to be authenticated.
  * </p>
  */
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
 
-    private final PostService  postService;
+    private final PostService postService;
     private final MediaService mediaService;
 
+    /**
+     * Constructs the PostController with required services.
+     *
+     * @param postService  service handling post business logic
+     * @param mediaService service handling media attachments
+     */
     public PostController(PostService postService,
                           MediaService mediaService) {
-        this.postService  = postService;
+        this.postService = postService;
         this.mediaService = mediaService;
     }
 
     /**
      * Create a new post.
      *
-     * @param auth the Spring Security {@link Authentication} holding the current principal
-     * @param req  the {@link PostRequest} with title, body, and status
+     * @param auth the Spring Security {@link Authentication} containing the current principal's username
+     * @param req  the {@link PostRequest} DTO with title, body, status, and optional originalPostId
      * @return the created {@link PostResponse}
+     * @throws com.catalin.vibelog.exception.PostNotFoundException if the originalPostId does not exist
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -62,7 +66,8 @@ public class PostController {
      * Fetch a single post by its ID.
      *
      * @param postId the ID of the post to retrieve
-     * @return the {@link PostResponse}
+     * @return the {@link PostResponse} DTO
+     * @throws com.catalin.vibelog.exception.PostNotFoundException if no post exists with the given ID
      */
     @GetMapping("/{postId}")
     public PostResponse getPost(
@@ -72,21 +77,16 @@ public class PostController {
     }
 
     /**
-     * List posts by status (e.g. PUBLISHED or DRAFT) or, if no status is provided,
-     * return all published posts.
+     * List posts by status (published or draft).
      *
-     * @param status   optional {@link PostStatus} query parameter
+     * @param status   optional {@link com.catalin.vibelog.model.enums.PostStatus}; defaults to PUBLISHED
      * @param pageable pagination and sorting information
-     * @return a page of {@link PostResponse}
+     * @return a {@link Page} of {@link PostResponse} matching the status
      */
     @GetMapping
     public Page<PostResponse> listPosts(
-            @RequestParam(required = false, defaultValue = "PUBLISHED") PostStatus status,
-            @PageableDefault(
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC,
-                    size = 15
-            )
+            @RequestParam(required = false, defaultValue = "PUBLISHED") com.catalin.vibelog.model.enums.PostStatus status,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 15)
             Pageable pageable
     ) {
         return postService.listPosts(status, pageable);
@@ -95,18 +95,14 @@ public class PostController {
     /**
      * List posts authored by the current user, newest first.
      *
-     * @param auth     the Spring Security {@link Authentication} holding the current principal
+     * @param auth     the Spring Security {@link Authentication} containing the current user's username
      * @param pageable pagination and sorting information
-     * @return a page of {@link PostResponse}
+     * @return a {@link Page} of {@link PostResponse}
      */
     @GetMapping("/me")
     public Page<PostResponse> listMyPosts(
             Authentication auth,
-            @PageableDefault(
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC,
-                    size = 15
-            )
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 15)
             Pageable pageable
     ) {
         String username = auth.getName();
@@ -114,12 +110,14 @@ public class PostController {
     }
 
     /**
-     * Update an existing post. Only the author may perform this.
+     * Update an existing post. Only the original author may update.
      *
-     * @param auth    the Spring Security {@link Authentication} holding the current principal
+     * @param auth    the Spring Security {@link Authentication} containing the current user's username
      * @param postId  the ID of the post to update
-     * @param req     the {@link PostRequest} with new title/body/status
+     * @param req     the {@link PostRequest} DTO with updated title, body, and status
      * @return the updated {@link PostResponse}
+     * @throws com.catalin.vibelog.exception.PostNotFoundException        if the post does not exist
+     * @throws com.catalin.vibelog.exception.UnauthorizedActionException if the user is not the author
      */
     @PutMapping("/{postId}")
     public PostResponse updatePost(
@@ -132,10 +130,12 @@ public class PostController {
     }
 
     /**
-     * Delete a post. Only the author may perform this.
+     * Delete a post. Only the original author may delete.
      *
-     * @param auth   the Spring Security {@link Authentication} holding the current principal
+     * @param auth   the Spring Security {@link Authentication} containing the current user's username
      * @param postId the ID of the post to delete
+     * @throws com.catalin.vibelog.exception.PostNotFoundException        if the post does not exist
+     * @throws com.catalin.vibelog.exception.UnauthorizedActionException if the user is not the author
      */
     @DeleteMapping("/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -147,46 +147,46 @@ public class PostController {
         postService.deletePost(postId, username);
     }
 
-    /** List the current user’s drafts, newest first */
+    /**
+     * List the current user's drafts, newest first.
+     *
+     * @param auth     the Spring Security {@link Authentication} containing the current user's username
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of draft {@link PostResponse}
+     */
     @GetMapping("/me/drafts")
     public Page<PostResponse> listMyDrafts(
             Authentication auth,
-            @PageableDefault(sort="createdAt", direction=Sort.Direction.DESC)
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
         String username = auth.getName();
-        return postService.listPostsByAuthorAndStatus(username, PostStatus.DRAFT, pageable);
+        return postService.listPostsByAuthorAndStatus(username, com.catalin.vibelog.model.enums.PostStatus.DRAFT, pageable);
     }
 
     /**
-     * List all **published** posts by the given username, newest first.
+     * List all published posts by a specific user, newest first.
      *
-     * @param username the username whose posts to fetch
-     * @param pageable pagination & sorting (default: createdAt desc, size=15)
-     * @return a page of {@link PostResponse}
+     * @param username the username whose published posts to fetch
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of {@link PostResponse}
      */
     @GetMapping("/user/{username}")
     public Page<PostResponse> listPublishedPostsByUser(
             @PathVariable String username,
-            @PageableDefault(
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC,
-                    size = 15
-            )
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 15)
             Pageable pageable
     ) {
-        return postService.listPostsByAuthorAndStatus(
-                username,
-                PostStatus.PUBLISHED,
-                pageable
-        );
+        return postService.listPostsByAuthorAndStatus(username, com.catalin.vibelog.model.enums.PostStatus.PUBLISHED, pageable);
     }
+
     /**
-     * Reblog an existing post: creates a new Post with originalPost set.
+     * Reblog an existing post by creating a new published post linked to the original.
      *
      * @param postId the ID of the post to reblog
-     * @param auth   the authenticated principal
-     * @return the newly created PostResponse (status PUBLISHED)
+     * @param auth   the Spring Security {@link Authentication} containing the current user's username
+     * @return the newly created {@link PostResponse}
+     * @throws com.catalin.vibelog.exception.PostNotFoundException if the original post does not exist
      */
     @PostMapping("/{postId}/reblog")
     @ResponseStatus(HttpStatus.CREATED)
@@ -199,13 +199,18 @@ public class PostController {
         PostRequest req = new PostRequest(
                 original.title(),
                 original.body(),
-                PostStatus.PUBLISHED.name(),
+                com.catalin.vibelog.model.enums.PostStatus.PUBLISHED.name(),
                 postId
         );
         return postService.createPost(req, username);
     }
+
     /**
-     * Undo a reblog by deleting the reblog‐post authored by the current user.
+     * Undo a reblog by deleting the reblog post created by the current user.
+     *
+     * @param postId the ID of the original post whose reblog to undo
+     * @param auth   the Spring Security {@link Authentication} containing the current user's username
+     * @throws com.catalin.vibelog.exception.PostNotFoundException if no such reblog exists
      */
     @DeleteMapping("/{postId}/reblog")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -217,9 +222,11 @@ public class PostController {
     }
 
     /**
-     * Check if the current user has reblogged this post.
+     * Check if the current user has reblogged a specific post.
      *
-     * @return { "reblogged": true|false }
+     * @param postId the ID of the original post
+     * @param auth   the Spring Security {@link Authentication} containing the current user's username
+     * @return a map with key "reblogged" and value true if reblogged, false otherwise
      */
     @GetMapping("/{postId}/reblog/state")
     public Map<String, Boolean> reblogState(
@@ -233,7 +240,8 @@ public class PostController {
     /**
      * Count how many times a post has been reblogged.
      *
-     * @return { "count": 123 }
+     * @param postId the ID of the original post
+     * @return a map with key "count" and the number of reblogs
      */
     @GetMapping("/{postId}/reblog/count")
     public Map<String, Integer> reblogCount(@PathVariable Long postId) {
@@ -242,7 +250,11 @@ public class PostController {
     }
 
     /**
-     * POST /api/posts/{postId}/media : attach a file to a post
+     * Attach a media file to a post.
+     *
+     * @param postId the ID of the post to attach media to
+     * @param file   the {@link MultipartFile} to upload
+     * @return a {@link MediaResponseDTO} with the media ID, URL, and type
      */
     @PostMapping("/{postId}/media")
     @ResponseStatus(HttpStatus.CREATED)
@@ -250,12 +262,15 @@ public class PostController {
             @PathVariable Long postId,
             @RequestParam("file") MultipartFile file
     ) {
-        Media m = mediaService.uploadToPost(postId, file);
+        var m = mediaService.uploadToPost(postId, file);
         return new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name());
     }
 
     /**
-     * GET /api/posts/{postId}/media : list all attachments for a post
+     * List all media attachments for a post.
+     *
+     * @param postId the ID of the post whose media to list
+     * @return a list of {@link MediaResponseDTO}
      */
     @GetMapping("/{postId}/media")
     public List<MediaResponseDTO> listMedia(@PathVariable Long postId) {
@@ -265,7 +280,9 @@ public class PostController {
     }
 
     /**
-     * DELETE /api/posts/media/{mediaId} : remove a single attachment
+     * Delete a single media attachment.
+     *
+     * @param mediaId the ID of the media to delete
      */
     @DeleteMapping("/media/{mediaId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

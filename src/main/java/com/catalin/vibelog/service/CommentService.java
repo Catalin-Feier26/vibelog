@@ -5,7 +5,8 @@ import com.catalin.vibelog.dto.response.CommentResponse;
 import java.util.List;
 
 /**
- * Business operations around comments on posts.
+ * Defines business operations for creating, retrieving, updating, and deleting comments on posts.
+ * Implementations enforce permission checks (author vs. moderator) and handle persistence.
  */
 public interface CommentService {
 
@@ -16,6 +17,8 @@ public interface CommentService {
      * @param req            the {@link CommentRequest} containing the comment content
      * @param authorUsername the username of the commenter (from Authentication)
      * @return the created {@link CommentResponse}
+     * @throws com.catalin.vibelog.exception.ResourceNotFoundException if no post exists with the given ID
+     * @throws com.catalin.vibelog.exception.UserNotFoundException     if the author username does not exist
      */
     CommentResponse addComment(Long postId, CommentRequest req, String authorUsername);
 
@@ -24,6 +27,7 @@ public interface CommentService {
      *
      * @param postId the ID of the post whose comments to list
      * @return a {@link List} of {@link CommentResponse}
+     * @throws com.catalin.vibelog.exception.ResourceNotFoundException if no post exists with the given ID
      */
     List<CommentResponse> listComments(Long postId);
 
@@ -34,6 +38,7 @@ public interface CommentService {
      * @param req            the {@link CommentRequest} with the new content
      * @param authorUsername the username of the user attempting the update
      * @return the updated {@link CommentResponse}
+     * @throws com.catalin.vibelog.exception.ResourceNotFoundException if no comment exists with the given ID
      */
     CommentResponse updateComment(Long commentId, CommentRequest req, String authorUsername);
 
@@ -42,8 +47,16 @@ public interface CommentService {
      *
      * @param commentId      the ID of the comment to delete
      * @param authorUsername the username of the user attempting the deletion
+     * @throws com.catalin.vibelog.exception.ResourceNotFoundException if no comment exists with the given ID
      */
     void deleteComment(Long commentId, String authorUsername);
-    void deleteCommentAsModerator(Long commentId);
 
+    /**
+     * Delete a comment by moderator (admin) privileges.
+     * This bypasses author ownership checks and removes the comment entirely.
+     *
+     * @param commentId the ID of the comment to delete
+     * @throws com.catalin.vibelog.exception.ResourceNotFoundException if no comment exists with the given ID
+     */
+    void deleteCommentAsModerator(Long commentId);
 }

@@ -31,8 +31,9 @@ import java.util.List;
 /**
  * Default implementation of {@link PostService}, using Spring Data JPA for persistence.
  * <p>
- * Read-only methods are optimized with {@code readOnly=true}. Mutating methods
- * are wrapped in transactions to ensure atomicity and rollback on failure.
+ * Read-only methods are optimized with <code>readOnly=true</code> and mutating methods
+ * are executed within transactions to ensure atomicity and rollback on failure.
+ * Events are published for reblogs.
  * </p>
  */
 @Service
@@ -46,6 +47,17 @@ public class PostServiceImpl implements PostService {
     private final ReportRepository reportRepo;
     private final MediaService mediaService;
 
+    /**
+     * Constructs the PostService implementation with required dependencies.
+     *
+     * @param reportRepo    repository for handling report cleanup on moderator actions
+     * @param postRepo      repository for post persistence
+     * @param userRepo      repository for user lookups
+     * @param commentRepo   repository for comment counts
+     * @param likeRepo      repository for like counts
+     * @param publisher     event publisher for reblog events
+     * @param mediaService  service for retrieving media attachments
+     */
     public PostServiceImpl(
             ReportRepository reportRepo,
             PostRepository postRepo,
@@ -55,15 +67,24 @@ public class PostServiceImpl implements PostService {
             ApplicationEventPublisher publisher,
             MediaService mediaService
     ) {
-        this.publisher = publisher;
+        this.reportRepo = reportRepo;
         this.postRepo = postRepo;
         this.userRepo = userRepo;
         this.commentRepo = commentRepo;
         this.likeRepo = likeRepo;
-        this.reportRepo = reportRepo;
+        this.publisher = publisher;
         this.mediaService = mediaService;
     }
 
+    /**
+     * Create a new post authored by the given user.
+     * Publishes a {@link ReblogEvent} if this post is a reblog.
+     *
+     * @param req             the {@link PostRequest} containing title, body, status, and optional originalPostId
+     * @param authorUsername  the username of the author
+     * @return the created {@link PostResponse}
+     * @throws PostNotFoundException       if the author or original post (when provided) does not exist
+     */
     @Override
     @Transactional
     public PostResponse createPost(PostRequest req, String authorUsername) {
@@ -91,6 +112,13 @@ public class PostServiceImpl implements PostService {
         return toDto(saved);
     }
 
+    /**
+     * Retrieve a post by its ID.
+     *
+     * @param postId the ID of the post to retrieve
+     * @return the corresponding {@link PostResponse}
+     * @throws PostNotFoundException if no post exists with the given ID
+     */
     @Override
     @Transactional(readOnly = true)
     public PostResponse getPostById(Long postId) {
@@ -99,6 +127,13 @@ public class PostServiceImpl implements PostService {
         return toDto(post);
     }
 
+    /**
+     * List posts by status with pagination.
+     *
+     * @param status   the {@link PostStatus} filter
+     * @param pageable pagination and sorting information
+     * @return a page of {@link PostResponse}
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> listPosts(PostStatus status, Pageable pageable) {
@@ -107,6 +142,16 @@ public class PostServiceImpl implements PostService {
                 .map(this::toDto);
     }
 
+    /**
+     * Update a post's content and status. Only the original author may update.
+     *
+     * @param postId          the ID of the post to update
+     * @param req             the {@link PostRequest} with new title, body, and status
+     * @param authorUsername  the username of the user attempting the update
+     * @return the updated {@link PostResponse}
+     * @throws PostNotFoundException        if no post exists with the given ID
+     * @throws UnauthorizedActionException  if the user is not the original author
+     */
     @Override
     @Transactional
     public PostResponse updatePost(Long postId, PostRequest req, String authorUsername) {
@@ -124,6 +169,14 @@ public class PostServiceImpl implements PostService {
         return toDto(updated);
     }
 
+    /**
+     * Delete a post. Only the original author may delete their post.
+     *
+     * @param postId         the ID of the post to delete
+     * @param authorUsername the username of the user attempting deletion
+     * @throws PostNotFoundException       if no post exists with the given ID
+     * @throws UnauthorizedActionException if the user is not the original author
+     */
     @Override
     @Transactional
     public void deletePost(Long postId, String authorUsername) {
@@ -136,6 +189,13 @@ public class PostServiceImpl implements PostService {
         postRepo.delete(post);
     }
 
+    /**
+     * List all posts by a specific author, with default sort by newest if none provided.
+     *
+     * @param authorUsername the username of the author
+     * @param pageable       pagination and sorting information
+     * @return a page of {@link PostResponse}
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> listPostsByAuthor(String authorUsername, Pageable pageable) {
@@ -147,6 +207,15 @@ public class PostServiceImpl implements PostService {
                 .map(this::toDto);
     }
 
+    /**
+     * List all posts by author filtered by status.
+     *
+     * @param username the author's username
+     * @param status   the {@link PostStatus} filter
+     * @param pageable pagination and sorting information
+     * @return a page of {@link PostResponse}
+     * @throws UserNotFoundException if the author does not exist
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> listPostsByAuthorAndStatus(String username, PostStatus status, Pageable pageable) {
@@ -156,19 +225,22 @@ public class PostServiceImpl implements PostService {
                 .map(this::toDto);
     }
 
+    /**
+     * Convert a {@link Post} entity to a {@link PostResponse} DTO,
+     * including counts for likes, comments, original post info, and media attachments.
+     *
+     * @param post the post entity to convert
+     * @return the corresponding response DTO
+     */
     private PostResponse toDto(Post post) {
         int likeCount = likeRepo.countByIdPostId(post.getId());
         int commentCount = commentRepo.findAllByPostId(post.getId(), Sort.unsorted()).size();
-
-        // null-safe original post info
         Long originalPostId = post.getOriginalPost() == null
                 ? null
                 : post.getOriginalPost().getId();
         String originalAuthor = post.getOriginalPost() == null
                 ? null
                 : post.getOriginalPost().getAuthor().getUsername();
-
-        // media attachments
         List<MediaResponseDTO> mediaDtos = mediaService.listForPost(post.getId()).stream()
                 .map(m -> new MediaResponseDTO(m.getId(), m.getUrl(), m.getType().name()))
                 .toList();
@@ -188,6 +260,13 @@ public class PostServiceImpl implements PostService {
         );
     }
 
+    /**
+     * Remove a reblog by the given user for the specified original post.
+     *
+     * @param username       the username of the reblogger
+     * @param originalPostId the ID of the original post to undo reblog
+     * @throws PostNotFoundException if no matching reblog exists
+     */
     @Override
     @Transactional
     public void undoReblog(String username, Long originalPostId) {
@@ -196,18 +275,37 @@ public class PostServiceImpl implements PostService {
         postRepo.delete(reblog);
     }
 
+    /**
+     * Check if a user has reblogged a specific post.
+     *
+     * @param username       the username to check
+     * @param originalPostId the ID of the original post
+     * @return {@code true} if the user has reblogged, {@code false} otherwise
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean isReblogged(String username, Long originalPostId) {
         return postRepo.existsByAuthorUsernameAndOriginalPostId(username, originalPostId);
     }
 
+    /**
+     * Count how many times a post has been reblogged.
+     *
+     * @param originalPostId the ID of the original post
+     * @return the number of reblogs
+     */
     @Override
     @Transactional(readOnly = true)
     public int countReblogs(Long originalPostId) {
         return postRepo.countByOriginalPostId(originalPostId);
     }
 
+    /**
+     * Delete a post as a moderator, including cleaning up associated reports.
+     *
+     * @param postId the ID of the post to delete
+     * @throws PostNotFoundException if no post exists with the given ID
+     */
     @Override
     @Transactional
     public void deletePostAsModerator(Long postId) {

@@ -23,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Default implementation of {@link UserService}, using Spring Data JPA for persistence.
- * All mutating methods are wrapped in transactions to ensure atomicity and rollback on failure.
+ * Default implementation of {@link UserService}, backed by Spring Data JPA.
+ * <p>
+ * Provides transactional user management operations including profile retrieval,
+ * partial updates, token regeneration, pagination, and administrative user creation.
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,15 +35,25 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Constructs the service with required dependencies.
+     *
+     * @param userRepo        repository for user persistence
+     * @param jwtUtil         utility for JWT generation
+     * @param passwordEncoder encoder for hashing user passwords
+     */
     public UserServiceImpl(UserRepository userRepo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
-        this.jwtUtil = jwtUtil;
         this.userRepo = userRepo;
+        this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>This method is marked <code>readOnly=true</code> to optimize for non-mutative queries.</p>
+     * Retrieve a user's profile by their ID.
+     *
+     * @param userId the ID of the user to retrieve
+     * @return a {@link ProfileResponse} dto of the found user
+     * @throws ResourceNotFoundException if no user exists with the given ID
      */
     @Override
     @Transactional(readOnly = true)
@@ -52,8 +64,15 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>Updates only fields provided in the request. Runs within a transaction.</p>
+     * Apply partial updates to a user's profile by ID.
+     * Only non-null fields in the request are applied.
+     *
+     * @param userId the ID of the user to update
+     * @param req    the changes to apply
+     * @return the updated {@link ProfileResponse}
+     * @throws ResourceNotFoundException      if no user exists with the given ID
+     * @throws EmailAlreadyExistsException    if the new email is already in use
+     * @throws UsernameAlreadyExistsException if the new username is already in use
      */
     @Override
     @Transactional
@@ -65,7 +84,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieve a user's profile by username.
+     *
+     * @param username the username of the user to retrieve
+     * @return a {@link ProfileResponse} dto of the found user
+     * @throws ResourceNotFoundException if no user exists with the given username
      */
     @Override
     @Transactional(readOnly = true)
@@ -76,7 +99,15 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * {@inheritDoc}
+     * Apply partial updates to a user's profile by username.
+     * Only non-null fields in the request are applied.
+     *
+     * @param username the username of the user to update
+     * @param req      the changes to apply
+     * @return the updated {@link ProfileResponse}
+     * @throws ResourceNotFoundException      if no user exists with the given username
+     * @throws EmailAlreadyExistsException    if the new email is already in use
+     * @throws UsernameAlreadyExistsException if the new username is already in use
      */
     @Override
     @Transactional
@@ -88,12 +119,150 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Applies non-null updates from the request to the given {@code User} entity.
+     * Update user profile and generate a new JWT for the updated identity.
      *
-     * @param u   the {@link User} to modify
-     * @param req the {@link ProfileUpdateRequest} containing fields to apply
-     * @throws EmailAlreadyExistsException    if attempting to set an email that's already in use
-     * @throws UsernameAlreadyExistsException if attempting to set a username that's already in use
+     * @param username the current username (extracted from existing JWT)
+     * @param req      the changes to apply
+     * @return a {@link ProfileUpdateWithTokenResponse} containing refreshed token and updated profile
+     * @throws ResourceNotFoundException      if no user exists with the given username
+     * @throws EmailAlreadyExistsException    if the new email is already in use
+     * @throws UsernameAlreadyExistsException if the new username is already in use
+     */
+    @Override
+    @Transactional
+    public ProfileUpdateWithTokenResponse updateProfileAndGetTokenByUsername(
+            String username,
+            ProfileUpdateRequest req
+    ) {
+        User u = userRepo.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        applyUpdates(u, req);
+        User saved = userRepo.save(u);
+
+        String newToken = jwtUtil.generateToken(saved);
+        ProfileResponse profile = toDto(saved);
+        return new ProfileUpdateWithTokenResponse(newToken, profile);
+    }
+
+    /**
+     * Lookup a user entity by username.
+     *
+     * @param username the username to search
+     * @return the found {@link User}
+     * @throws EntityNotFoundException if no user exists with the given username
+     */
+    @Override
+    public User findByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User not found: " + username)
+                );
+    }
+
+    /**
+     * List users with optional username filtering in a paginated view.
+     *
+     * @param usernameFragment filter substring for usernames (ignored if blank)
+     * @param page             pagination and sorting information
+     * @return a {@link Page} of {@link ProfileResponse}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProfileResponse> listUsers(String usernameFragment, Pageable page) {
+        if (usernameFragment != null && !usernameFragment.isBlank()) {
+            return userRepo
+                    .findByUsernameContainingIgnoreCase(usernameFragment, page)
+                    .map(this::toDto);
+        }
+        return userRepo.findAll(page).map(this::toDto);
+    }
+
+    /**
+     * Retrieve a user's profile by ID.
+     *
+     * @param userId the ID of the user to retrieve
+     * @return a {@link ProfileResponse} dto
+     * @throws ResourceNotFoundException if no user exists with the given ID
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProfileResponse getUserById(Long userId) {
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
+        return toDto(u);
+    }
+
+    /**
+     * Partial update of any user's profile by ID (admin operation).
+     *
+     * @param userId the ID of the user to update
+     * @param req    the changes to apply
+     * @return the updated {@link ProfileResponse}
+     * @throws ResourceNotFoundException      if no user exists with the given ID
+     * @throws EmailAlreadyExistsException    if the new email is already in use
+     * @throws UsernameAlreadyExistsException if the new username is already in use
+     */
+    @Override
+    @Transactional
+    public ProfileResponse updateUserById(Long userId, ProfileUpdateRequest req) {
+        User u = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
+        applyUpdates(u, req);
+        return toDto(userRepo.save(u));
+    }
+
+    /**
+     * Delete a user by ID along with associated data.
+     *
+     * @param userId the ID of the user to delete
+     * @throws ResourceNotFoundException if no user exists with the given ID
+     */
+    @Override
+    @Transactional
+    public void deleteUserById(Long userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found: id=" + userId);
+        }
+        userRepo.deleteById(userId);
+    }
+
+    /**
+     * Create a new regular user (admin-only operation).
+     * Validates uniqueness, hashes password, and assigns USER role.
+     *
+     * @param req registration data containing email, username, and raw password
+     * @return the {@link ProfileResponse} dto of the newly created user
+     * @throws EmailAlreadyExistsException    if the email is already registered
+     * @throws UsernameAlreadyExistsException if the username is already taken
+     */
+    @Override
+    @Transactional
+    public ProfileResponse createUser(RegisterRequest req) {
+        if (userRepo.existsByEmail(req.email())) {
+            throw new EmailAlreadyExistsException("Email already in use: " + req.email());
+        }
+        if (userRepo.existsByUsername(req.username())) {
+            throw new UsernameAlreadyExistsException("Username already in use: " + req.username());
+        }
+
+        User u = new RegularUser();
+        u.setEmail(req.email());
+        u.setUsername(req.username());
+        u.setPasswordHash(passwordEncoder.encode(req.password()));
+        u.setRole(Role.USER);
+        User saved = userRepo.save(u);
+
+        return toDto(saved);
+    }
+
+    /**
+     * Apply non-null updates from the request to the given user entity,
+     * enforcing uniqueness for email and username.
+     *
+     * @param u   the user entity to modify
+     * @param req contains new values to apply
+     * @throws EmailAlreadyExistsException    if the new email is already in use
+     * @throws UsernameAlreadyExistsException if the new username is already in use
      */
     private void applyUpdates(User u, ProfileUpdateRequest req) {
         if (req.email() != null && !req.email().equals(u.getEmail())) {
@@ -115,59 +284,12 @@ public class UserServiceImpl implements UserService {
             u.setProfilePicture(req.profilePicture());
         }
     }
+
     /**
-     * Updates the profile of the authenticated user (looked up by username),
-     * persists the changes, and generates a fresh JWT reflecting any identity updates.
+     * Map a {@link User} entity to a {@link ProfileResponse} dto.
      *
-     * @param username the current username of the authenticated user (derived from the JWT)
-     * @param req      a {@link ProfileUpdateRequest} containing any fields to be updated;
-     *                 only non-null values will be applied to the user entity
-     * @return a {@link ProfileUpdateWithTokenResponse} containing:
-     *         <ul>
-     *           <li>{@code token}: a new JWT signed for the updated user</li>
-     *           <li>{@code profile}: a {@link ProfileResponse} DTO of the saved user</li>
-     *         </ul>
-     * @throws com.catalin.vibelog.exception.ResourceNotFoundException
-     *         if no user exists with the given username
-     * @throws com.catalin.vibelog.exception.EmailAlreadyExistsException
-     *         if attempting to set an email that’s already in use by another account
-     * @throws com.catalin.vibelog.exception.UsernameAlreadyExistsException
-     *         if attempting to set a username that’s already taken
-     */
-    @Override
-    @Transactional
-    public ProfileUpdateWithTokenResponse updateProfileAndGetTokenByUsername(
-            String username,
-            ProfileUpdateRequest req
-    ) {
-        User u = userRepo.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
-        applyUpdates(u, req);
-        User saved = userRepo.save(u);
-
-        String newToken = jwtUtil.generateToken(saved);
-
-        ProfileResponse profile = toDto(saved);
-        return new ProfileUpdateWithTokenResponse(newToken, profile);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public User findByUsername(String username) {
-        return userRepo.findByUsername(username)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("User not found: " + username)
-                );
-    }
-
-    /**
-     * Maps a {@link User} entity to a {@link ProfileResponse} DTO.
-     *
-     * @param u the user entity to convert
-     * @return the populated response DTO
+     * @param u the user entity
+     * @return the corresponding response dto
      */
     private ProfileResponse toDto(User u) {
         return new ProfileResponse(
@@ -180,76 +302,4 @@ public class UserServiceImpl implements UserService {
                 List.of(u.getRole().name())
         );
     }
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ProfileResponse> listUsers(String usernameFragment, Pageable page) {
-        if (usernameFragment != null && !usernameFragment.isBlank()) {
-            return userRepo
-                    .findByUsernameContainingIgnoreCase(usernameFragment, page)
-                    .map(this::toDto);
-        }
-        return userRepo.findAll(page).map(this::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ProfileResponse getUserById(Long userId) {
-        User u = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
-        return toDto(u);
-    }
-
-    @Override
-    @Transactional
-    public ProfileResponse updateUserById(Long userId, ProfileUpdateRequest req) {
-        User u = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: id=" + userId));
-        applyUpdates(u, req);
-        return toDto(userRepo.save(u));
-    }
-
-    @Override
-    @Transactional
-    public void deleteUserById(Long userId) {
-        if (!userRepo.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found: id=" + userId);
-        }
-        userRepo.deleteById(userId);
-    }
-    /**
-     * {@inheritDoc}
-     * <p>Admin-only: checks uniqueness, hashes password, sets default USER role.</p>
-     */
-    @Override
-    @Transactional
-    public ProfileResponse createUser(RegisterRequest req) {
-        // 1) uniqueness
-        if (userRepo.existsByEmail(req.email())) {
-            throw new EmailAlreadyExistsException("Email already in use: " + req.email());
-        }
-        if (userRepo.existsByUsername(req.username())) {
-            throw new UsernameAlreadyExistsException("Username already in use: " + req.username());
-        }
-
-        // 2) build & save
-        User u = new RegularUser();
-        u.setEmail(req.email());
-        u.setUsername(req.username());
-        u.setPasswordHash(passwordEncoder.encode(req.password()));
-        u.setRole(Role.USER);
-        User saved = userRepo.save(u);
-
-        // 3) map to ProfileResponse
-        return new ProfileResponse(
-                saved.getId(),
-                saved.getEmail(),
-                saved.getUsername(),
-                saved.getBio(),
-                saved.getProfilePicture(),
-                saved.getCreatedAt(),
-                List.of(saved.getRole().name())
-        );
-    }
-
-
 }

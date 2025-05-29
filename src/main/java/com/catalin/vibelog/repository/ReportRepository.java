@@ -8,47 +8,62 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * Repository for {@link Report} entities.
- * Supports querying by status, reporter, and target content.
+ * Spring Data repository for managing {@link Report} entities.
+ * <p>
+ * Provides methods to query reports by status, reporter username,
+ * and target content (post or comment), as well as delete bulk reports
+ * by target identifiers.
  */
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
     /**
-     * Find all reports with the given status.
+     * Retrieve a paginated list of reports filtered by their status.
      *
-     * @param status   the report status to filter by
-     * @param pageable paging information
-     * @return a page of reports
+     * @param status   the {@link ReportStatus} to filter by
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of {@link Report} entities matching the status
      */
     Page<Report> findByStatus(ReportStatus status, Pageable pageable);
 
     /**
-     * Find all reports filed by a specific user.
+     * Retrieve a paginated list of reports submitted by a specific user.
      *
-     * @param username reporter's username
-     * @param pageable paging information
-     * @return a page of reports
+     * @param username the username of the reporter
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of {@link Report} entities filed by the reporter
      */
     Page<Report> findByReporterUsername(String username, Pageable pageable);
 
     /**
-     * Find all reports against a given post.
+     * Retrieve a paginated list of reports targeting a specific post.
      *
-     * @param postId   ID of the reported post
-     * @param pageable paging information
-     * @return a page of reports
+     * @param postId   the ID of the reported post
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of {@link Report} entities for the post
      */
     Page<Report> findByPostId(Long postId, Pageable pageable);
 
     /**
-     * Find all reports against a given comment.
+     * Retrieve a paginated list of reports targeting a specific comment.
      *
-     * @param commentId ID of the reported comment
-     * @param pageable  paging information
-     * @return a page of reports
+     * @param commentId the ID of the reported comment
+     * @param pageable  pagination and sorting information
+     * @return a {@link Page} of {@link Report} entities for the comment
      */
     Page<Report> findByCommentId(Long commentId, Pageable pageable);
+
+    /**
+     * Delete all reports associated with the given post ID.
+     *
+     * @param postId the ID of the post whose reports should be removed
+     */
     void deleteAllByPostId(Long postId);
+
+    /**
+     * Delete all reports associated with the given comment ID.
+     *
+     * @param commentId the ID of the comment whose reports should be removed
+     */
     void deleteAllByCommentId(Long commentId);
 }

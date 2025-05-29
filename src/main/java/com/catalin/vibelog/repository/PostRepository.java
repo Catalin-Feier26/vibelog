@@ -11,46 +11,93 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository for {@link Post} entities.
- * Provides CRUD operations plus custom queries for pagination and filtering by status or author.
+ * Spring Data repository for managing {@link Post} entities.
+ * <p>
+ * Extends {@link JpaRepository} to provide CRUD operations and defines
+ * additional methods for filtering by status, author, search queries,
+ * engagement metrics, and reblog relationships.
+ * </p>
  */
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     /**
-     * Retrieve a page of posts filtered by {@link PostStatus}.
+     * Retrieve a page of posts filtered by their status.
      *
-     * @param status   the {@link PostStatus} to filter by (e.g. PUBLISHED or DRAFT)
+     * @param status   the {@link PostStatus} to filter by (e.g., PUBLISHED or DRAFT)
      * @param pageable pagination and sorting information
-     * @return a {@link Page} of {@link Post} matching the given status
+     * @return a {@link Page} of posts matching the specified status
      */
     Page<Post> findAllByStatus(PostStatus status, Pageable pageable);
 
     /**
-     * Retrieve a page of posts authored by a specific user.
+     * Retrieve a page of posts authored by the specified user.
      *
      * @param username the author's username
      * @param pageable pagination and sorting information
-     * @return a {@link Page} of {@link Post} created by the given username
+     * @return a {@link Page} of posts created by the given username
      */
     Page<Post> findByAuthorUsername(String username, Pageable pageable);
+
+    /**
+     * Retrieve a page of posts authored by the specified user, further
+     * filtered by status.
+     *
+     * @param username the author's username
+     * @param status   the {@link PostStatus} to filter by
+     * @param pageable pagination and sorting information
+     * @return a {@link Page} of posts matching the author and status
+     */
     Page<Post> findByAuthorUsernameAndStatus(String username, PostStatus status, Pageable pageable);
-    // detect if a user reblogged
+
+    /**
+     * Check if a user has reblogged a specific post.
+     *
+     * @param authorUsername   the username of the reblogging user
+     * @param originalPostId   the ID of the original post
+     * @return {@code true} if the user has reblogged the post, {@code false} otherwise
+     */
     boolean existsByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
 
-    // count all reblogs (any post with originalPost FK)
+    /**
+     * Count how many times a given post has been reblogged.
+     *
+     * @param originalPostId the ID of the original post
+     * @return the number of reblogs referencing the given post
+     */
     int countByOriginalPostId(Long originalPostId);
 
-    // find the single reblog to delete
-    Optional<Post> findByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
     /**
-     * Search published posts whose title or body contains {@code text}, ignoring case.
+     * Find a specific reblog entry by author and original post.
+     *
+     * @param authorUsername the username of the reblogging user
+     * @param originalPostId the ID of the original post
+     * @return an {@link Optional} containing the reblogged {@link Post}, if present
+     */
+    Optional<Post> findByAuthorUsernameAndOriginalPostId(String authorUsername, Long originalPostId);
+
+    /**
+     * Search published posts by matching the query string against title or body,
+     * case-insensitive.
+     *
+     * @param status1        the status to match for title search (typically PUBLISHED)
+     * @param titleFragment  substring to search within post titles
+     * @param status2        the status to match for body search (typically PUBLISHED)
+     * @param bodyFragment   substring to search within post bodies
+     * @param pageable       pagination and sorting information
+     * @return a {@link Page} of posts whose title or body contains the query string
      */
     Page<Post> findByStatusAndTitleContainingIgnoreCaseOrStatusAndBodyContainingIgnoreCase(
             PostStatus status1, String titleFragment,
             PostStatus status2, String bodyFragment,
             Pageable pageable
     );
-    /** Returns the IDs of the posts sorted by number of likes desc. */
+
+    /**
+     * Retrieve the IDs of posts sorted by descending number of likes.
+     *
+     * @param limit pagination information to indicate number of top results
+     * @return a {@link List} of post IDs ordered by like count (highest first)
+     */
     @Query("""
       SELECT p.id
       FROM Post p
@@ -60,7 +107,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       """)
     List<Long> findTopLikedPostIds(Pageable limit);
 
-    /** Returns the IDs of the posts sorted by number of comments desc. */
+    /**
+     * Retrieve the IDs of posts sorted by descending number of comments.
+     *
+     * @param limit pagination information to indicate number of top results
+     * @return a {@link List} of post IDs ordered by comment count (highest first)
+     */
     @Query("""
       SELECT p.id
       FROM Post p
@@ -71,8 +123,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Long> findTopCommentedPostIds(Pageable limit);
 
     /**
-     * Returns the IDs of the original posts sorted by how many times they’ve been reblogged.
-     * We do a sub‐select over Post to count how many reference p as originalPost.
+     * Retrieve the IDs of original posts sorted by descending reblog count.
+     * Uses a subquery to count reblogs referencing each post.
+     *
+     * @param limit pagination information to indicate number of top results
+     * @return a {@link List} of post IDs ordered by reblog count (highest first)
      */
     @Query("""
       SELECT p.id
